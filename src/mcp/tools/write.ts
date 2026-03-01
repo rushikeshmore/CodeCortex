@@ -7,7 +7,7 @@ import { writeDecision, createDecision } from '../../core/decisions.js'
 import { addPattern } from '../../core/patterns.js'
 import { writeFile, ensureDir } from '../../utils/files.js'
 import { readGraph } from '../../core/graph.js'
-import type { ModuleAnalysis } from '../../types/index.js'
+import type { ModuleAnalysis, TemporalData, Hotspot, ChangeCoupling, BugRecord } from '../../types/index.js'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
@@ -15,7 +15,7 @@ function textResult(data: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] }
 }
 
-export function registerWriteTools(server: McpServer, projectRoot: string) {
+export function registerWriteTools(server: McpServer, projectRoot: string): void {
   // --- Tool 10: analyze_module ---
   server.registerTool(
     'analyze_module',
@@ -76,26 +76,26 @@ export function registerWriteTools(server: McpServer, projectRoot: string) {
       // Enrich with temporal data if available
       const temporalContent = await readFileUtil(cortexPath(projectRoot, 'temporal.json'))
       if (temporalContent) {
-        const temporal = JSON.parse(temporalContent)
-        const hotspot = temporal.hotspots?.find((h: any) =>
+        const temporal: TemporalData = JSON.parse(temporalContent)
+        const hotspot = temporal.hotspots?.find((h: Hotspot) =>
           h.file.includes(`/${analysis.name}/`) || h.file.includes(`${analysis.name}.`)
         )
-        const couplings = temporal.coupling?.filter((c: any) =>
+        const couplings = temporal.coupling?.filter((c: ChangeCoupling) =>
           c.fileA.includes(`/${analysis.name}/`) || c.fileB.includes(`/${analysis.name}/`)
         ) || []
-        const bugs = temporal.bugHistory?.filter((b: any) =>
+        const bugs = temporal.bugHistory?.filter((b: BugRecord) =>
           b.file.includes(`/${analysis.name}/`)
         ) || []
 
         if (hotspot || couplings.length > 0 || bugs.length > 0) {
           moduleAnalysis.temporalSignals = {
             churn: hotspot ? `${hotspot.changes} changes (${hotspot.stability})` : 'unknown',
-            coupledWith: couplings.map((c: any) => {
+            coupledWith: couplings.map((c: ChangeCoupling) => {
               const other = c.fileA.includes(`/${analysis.name}/`) ? c.fileB : c.fileA
               return `${other} (${c.cochanges} co-changes)`
             }),
             stability: hotspot?.stability || 'unknown',
-            bugHistory: bugs.flatMap((b: any) => b.lessons),
+            bugHistory: bugs.flatMap((b: BugRecord) => b.lessons),
             lastChanged: hotspot?.lastChanged || 'unknown',
           }
         }

@@ -27,9 +27,9 @@ export async function getCommitHistory(root: string, days: number = 90): Promise
   }))
 }
 
-function parseStatFiles(diff: any): string[] {
+function parseStatFiles(diff: { files?: { file: string }[] } | null | undefined): string[] {
   if (!diff || !diff.files) return []
-  return diff.files.map((f: any) => f.file)
+  return diff.files.map((f) => f.file)
 }
 
 export async function getLastCommitDate(root: string, file: string): Promise<string | null> {

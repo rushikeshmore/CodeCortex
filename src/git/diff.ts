@@ -55,9 +55,9 @@ export function mapFilesToModules(files: string[]): Map<string, string[]> {
     const parts = file.split('/')
     let module = 'root'
 
-    if (parts[0] === 'src' && parts.length >= 3) {
+    if (parts[0] === 'src' && parts.length >= 3 && parts[1]) {
       module = parts[1]
-    } else if (parts[0] === 'lib' && parts.length >= 3) {
+    } else if (parts[0] === 'lib' && parts.length >= 3 && parts[1]) {
       module = parts[1]
     }
 

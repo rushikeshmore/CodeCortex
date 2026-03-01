@@ -17,7 +17,7 @@ import { createSession, writeSession, getLatestSession } from '../../core/sessio
 import { readFile as fsRead } from 'node:fs/promises'
 import type { SymbolRecord, ImportEdge, CallEdge, SymbolIndex } from '../../types/index.js'
 
-export async function updateCommand(opts: { root: string; days: string }) {
+export async function updateCommand(opts: { root: string; days: string }): Promise<void> {
   const root = resolve(opts.root)
   const days = parseInt(opts.days, 10)
 
@@ -76,9 +76,11 @@ export async function updateCommand(opts: { root: string; days: string }) {
       const content = await fsRead(file.absolutePath, 'utf-8')
       const importMatches = content.matchAll(/from\s+['"]([^.\/][^'"]*)['"]/g)
       for (const match of importMatches) {
-        const pkg = match[1].startsWith('@') ? match[1].split('/').slice(0, 2).join('/') : match[1].split('/')[0]
+        const raw = match[1]
+        if (!raw) continue
+        const pkg = raw.startsWith('@') ? raw.split('/').slice(0, 2).join('/') : raw.split('/')[0] ?? raw
         if (!externalDeps[pkg]) externalDeps[pkg] = []
-        if (!externalDeps[pkg].includes(file.path)) externalDeps[pkg].push(file.path)
+        externalDeps[pkg]!.push(file.path)
       }
     } catch { /* skip */ }
   }

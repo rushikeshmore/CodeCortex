@@ -37,7 +37,7 @@ export function createDecision(input: {
 
   return {
     id,
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0] ?? '',
     title: input.title,
     context: input.context,
     decision: input.decision,

@@ -43,7 +43,7 @@ function detectProjectName(root: string): string {
     try {
       const cargo = execSync(`cat "${cargoPath}"`, { encoding: 'utf-8' })
       const match = cargo.match(/name\s*=\s*"(.+?)"/)
-      if (match) return match[1]
+      if (match?.[1]) return match[1]
     } catch { /* ignore */ }
   }
 
@@ -135,17 +135,20 @@ function detectModules(root: string, files: DiscoveredFile[]): string[] {
   for (const file of files) {
     const parts = file.path.split('/')
     if (parts.length >= 2) {
+      const dir = parts[1]
+      if (!dir) continue
+
       // src/scoring/compute.ts → "scoring"
       if (parts[0] === 'src' && parts.length >= 3) {
-        srcDirs.add(parts[1])
+        srcDirs.add(dir)
       }
       // lib/scoring/compute.ts → "scoring"
       else if (parts[0] === 'lib' && parts.length >= 3) {
-        srcDirs.add(parts[1])
+        srcDirs.add(dir)
       }
       // pkg/scoring/compute.ts → "scoring" (Go style)
       else if (parts[0] === 'pkg' && parts.length >= 3) {
-        srcDirs.add(parts[1])
+        srcDirs.add(dir)
       }
     }
   }

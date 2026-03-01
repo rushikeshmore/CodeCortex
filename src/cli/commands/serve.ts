@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { cortexPath } from '../../utils/files.js'
 import { startServer } from '../../mcp/server.js'
 
-export async function serveCommand(opts: { root: string }) {
+export async function serveCommand(opts: { root: string }): Promise<void> {
   const root = resolve(opts.root)
 
   // Check if .codecortex/ exists

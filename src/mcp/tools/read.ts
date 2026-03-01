@@ -13,7 +13,7 @@ function textResult(data: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] }
 }
 
-export function registerReadTools(server: McpServer, projectRoot: string) {
+export function registerReadTools(server: McpServer, projectRoot: string): void {
   // --- Tool 1: get_project_overview ---
   server.registerTool(
     'get_project_overview',

@@ -7,7 +7,7 @@ import { listDecisions } from '../../core/decisions.js'
 import { listSessions, getLatestSession } from '../../core/sessions.js'
 import type { SymbolIndex, TemporalData } from '../../types/index.js'
 
-export async function statusCommand(opts: { root: string }) {
+export async function statusCommand(opts: { root: string }): Promise<void> {
   const root = resolve(opts.root)
 
   if (!existsSync(cortexPath(root, 'cortex.yaml'))) {

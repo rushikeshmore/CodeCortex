@@ -43,7 +43,7 @@ export async function listSessions(projectRoot: string): Promise<string[]> {
 
 export async function getLatestSession(projectRoot: string): Promise<string | null> {
   const sessions = await listSessions(projectRoot)
-  return sessions.length > 0 ? sessions[0] : null
+  return sessions[0] ?? null
 }
 
 export function createSession(opts: {

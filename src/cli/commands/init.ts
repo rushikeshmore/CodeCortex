@@ -12,9 +12,9 @@ import { extractImports } from '../../extraction/imports.js'
 import { extractCalls } from '../../extraction/calls.js'
 import { writeFile, ensureDir, cortexPath } from '../../utils/files.js'
 import { readFile } from 'node:fs/promises'
-import type { SymbolRecord, ImportEdge, CallEdge, ModuleNode, SymbolIndex } from '../../types/index.js'
+import type { SymbolRecord, ImportEdge, CallEdge, ModuleNode, SymbolIndex, ProjectInfo } from '../../types/index.js'
 
-export async function initCommand(opts: { root: string; days: string }) {
+export async function initCommand(opts: { root: string; days: string }): Promise<void> {
   const root = resolve(opts.root)
   const days = parseInt(opts.days, 10)
 
@@ -92,9 +92,11 @@ export async function initCommand(opts: { root: string; days: string }) {
       const content = await readFile(file.absolutePath, 'utf-8')
       const importMatches = content.matchAll(/from\s+['"]([^.\/][^'"]*)['"]/g)
       for (const match of importMatches) {
-        const pkg = match[1].startsWith('@') ? match[1].split('/').slice(0, 2).join('/') : match[1].split('/')[0]
+        const raw = match[1]
+        if (!raw) continue
+        const pkg = raw.startsWith('@') ? raw.split('/').slice(0, 2).join('/') : raw.split('/')[0] ?? raw
         if (!externalDeps[pkg]) externalDeps[pkg] = []
-        if (!externalDeps[pkg].includes(file.path)) externalDeps[pkg].push(file.path)
+        externalDeps[pkg]!.push(file.path)
       }
     } catch { /* skip */ }
   }
@@ -199,7 +201,7 @@ export async function initCommand(opts: { root: string; days: string }) {
   console.log('Run `codecortex serve` to start the MCP server.')
 }
 
-function generateOverview(project: { name: string; type: string; files: any[]; modules: string[]; entryPoints: string[]; languages: string[] }): string {
+function generateOverview(project: ProjectInfo): string {
   const lines = [
     `# ${project.name} — Overview`,
     '',
@@ -222,7 +224,8 @@ function generateOverview(project: { name: string; type: string; files: any[]; m
     const parts = file.path.split('/')
     const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.'
     const existing = dirs.get(dir) || []
-    existing.push(parts[parts.length - 1])
+    const fileName = parts[parts.length - 1]
+    if (fileName) existing.push(fileName)
     dirs.set(dir, existing)
   }
 

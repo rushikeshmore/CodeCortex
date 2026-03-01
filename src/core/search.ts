@@ -25,7 +25,8 @@ export async function searchKnowledge(projectRoot: string, query: string): Promi
 
     const lines = content.split('\n')
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].toLowerCase().includes(queryLower)) {
+      const line = lines[i]
+      if (line?.toLowerCase().includes(queryLower)) {
         // Get surrounding context (2 lines before and after)
         const start = Math.max(0, i - 2)
         const end = Math.min(lines.length - 1, i + 2)
@@ -34,7 +35,7 @@ export async function searchKnowledge(projectRoot: string, query: string): Promi
         results.push({
           file: filePath.replace(cortexRoot + '/', ''),
           line: i + 1,
-          content: lines[i].trim(),
+          content: line.trim(),
           context,
         })
       }

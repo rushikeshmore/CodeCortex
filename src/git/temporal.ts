@@ -88,7 +88,9 @@ export function getChangeCoupling(commits: CommitInfo[]): ChangeCoupling[] {
   for (const [key, cochanges] of pairCounts) {
     if (cochanges < 3) continue // Filter noise
 
-    const [fileA, fileB] = key.split('|')
+    const parts = key.split('|')
+    const fileA = parts[0] ?? ''
+    const fileB = parts[1] ?? ''
     const maxChanges = Math.max(fileCounts.get(fileA) || 0, fileCounts.get(fileB) || 0)
     const strength = maxChanges > 0 ? cochanges / maxChanges : 0
 
