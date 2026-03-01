@@ -1,0 +1,59 @@
+{
+  "name": "codecortex",
+  "version": "0.1.0",
+  "description": "Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into structured knowledge and serves to AI agents via MCP.",
+  "type": "module",
+  "bin": {
+    "codecortex": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/cli/index.ts",
+    "build": "tsup",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rushikeshmore/CodeCortex.git"
+  },
+  "keywords": [
+    "ai",
+    "codebase",
+    "knowledge",
+    "mcp",
+    "tree-sitter",
+    "code-intelligence",
+    "developer-tools"
+  ],
+  "author": "Rushikesh More",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rushikeshmore/CodeCortex/issues"
+  },
+  "homepage": "https://github.com/rushikeshmore/CodeCortex#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "commander": "^13.0.0",
+    "glob": "^11.0.0",
+    "simple-git": "^3.27.0",
+    "web-tree-sitter": "^0.25.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

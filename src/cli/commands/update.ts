@@ -1,0 +1,147 @@
+import { resolve } from 'node:path'
+import { existsSync } from 'node:fs'
+import { cortexPath, readFile, writeFile } from '../../utils/files.js'
+import { readManifest, updateManifest } from '../../core/manifest.js'
+import { discoverProject } from '../../core/discovery.js'
+import { analyzeTemporalData } from '../../git/temporal.js'
+import { isGitRepo } from '../../git/history.js'
+import { getUncommittedDiff } from '../../git/diff.js'
+import { mapFilesToModules } from '../../git/diff.js'
+import { initParser, parseFile, languageFromPath } from '../../extraction/parser.js'
+import { extractSymbols } from '../../extraction/symbols.js'
+import { extractImports } from '../../extraction/imports.js'
+import { extractCalls } from '../../extraction/calls.js'
+import { buildGraph, writeGraph, enrichCouplingWithImports } from '../../core/graph.js'
+import { generateConstitution } from '../../core/constitution.js'
+import { createSession, writeSession, getLatestSession } from '../../core/sessions.js'
+import { readFile as fsRead } from 'node:fs/promises'
+import type { SymbolRecord, ImportEdge, CallEdge, SymbolIndex } from '../../types/index.js'
+
+export async function updateCommand(opts: { root: string; days: string }) {
+  const root = resolve(opts.root)
+  const days = parseInt(opts.days, 10)
+
+  if (!existsSync(cortexPath(root, 'cortex.yaml'))) {
+    console.error('Error: No CodeCortex knowledge found. Run `codecortex init` first.')
+    process.exit(1)
+  }
+
+  console.log('CodeCortex update — refreshing knowledge...')
+  console.log('')
+
+  // Discover current state
+  console.log('Discovering changes...')
+  const project = await discoverProject(root)
+
+  // Re-extract all symbols (full refresh for now, incremental in v2)
+  console.log('Re-extracting symbols...')
+  await initParser()
+
+  const allSymbols: SymbolRecord[] = []
+  const allImports: ImportEdge[] = []
+  const allCalls: CallEdge[] = []
+
+  for (const file of project.files) {
+    const lang = languageFromPath(file.path)
+    if (!lang) continue
+    try {
+      const tree = await parseFile(file.absolutePath, lang)
+      const source = await fsRead(file.absolutePath, 'utf-8')
+      allSymbols.push(...extractSymbols(tree, file.path, lang, source))
+      allImports.push(...extractImports(tree, file.path, lang))
+      allCalls.push(...extractCalls(tree, file.path, lang))
+    } catch { /* skip */ }
+  }
+
+  // Rebuild graph
+  console.log('Rebuilding dependency graph...')
+  const moduleNodes = project.modules.map(modName => {
+    const modFiles = project.files.filter(f => {
+      const parts = f.path.split('/')
+      return (parts[0] === 'src' && parts[1] === modName)
+    })
+    return {
+      path: `src/${modName}`,
+      name: modName,
+      files: modFiles.map(f => f.path),
+      language: modFiles[0]?.language || 'unknown',
+      lines: modFiles.reduce((sum, f) => sum + f.lines, 0),
+      symbols: allSymbols.filter(s => modFiles.some(f => f.path === s.file)).length,
+    }
+  })
+
+  const externalDeps: Record<string, string[]> = {}
+  for (const file of project.files) {
+    try {
+      const content = await fsRead(file.absolutePath, 'utf-8')
+      const importMatches = content.matchAll(/from\s+['"]([^.\/][^'"]*)['"]/g)
+      for (const match of importMatches) {
+        const pkg = match[1].startsWith('@') ? match[1].split('/').slice(0, 2).join('/') : match[1].split('/')[0]
+        if (!externalDeps[pkg]) externalDeps[pkg] = []
+        if (!externalDeps[pkg].includes(file.path)) externalDeps[pkg].push(file.path)
+      }
+    } catch { /* skip */ }
+  }
+
+  const graph = buildGraph({
+    modules: moduleNodes,
+    imports: allImports,
+    calls: allCalls,
+    entryPoints: project.entryPoints,
+    externalDeps,
+  })
+
+  // Re-analyze temporal data
+  console.log('Re-analyzing git history...')
+  let temporalData = null
+  if (await isGitRepo(root)) {
+    temporalData = await analyzeTemporalData(root, days)
+    enrichCouplingWithImports(graph, temporalData.coupling)
+  }
+
+  // Write updated files
+  console.log('Writing updated knowledge...')
+  const symbolIndex: SymbolIndex = {
+    generated: new Date().toISOString(),
+    total: allSymbols.length,
+    symbols: allSymbols,
+  }
+  await writeFile(cortexPath(root, 'symbols.json'), JSON.stringify(symbolIndex, null, 2))
+  await writeGraph(root, graph)
+  if (temporalData) {
+    await writeFile(cortexPath(root, 'temporal.json'), JSON.stringify(temporalData, null, 2))
+  }
+
+  // Update manifest
+  await updateManifest(root, {
+    totalFiles: project.files.length,
+    totalSymbols: allSymbols.length,
+    totalModules: project.modules.length,
+    languages: project.languages,
+  })
+
+  // Regenerate constitution
+  await generateConstitution(root)
+
+  // Create session log
+  const diff = await getUncommittedDiff(root).catch(() => ({ filesChanged: [], summary: 'no changes' }))
+  const previousSession = await getLatestSession(root)
+  const affectedModules = [...mapFilesToModules(diff.filesChanged).keys()]
+  const session = createSession({
+    filesChanged: diff.filesChanged,
+    modulesAffected: affectedModules,
+    summary: `Updated knowledge. ${allSymbols.length} symbols, ${project.modules.length} modules.`,
+    previousSession: previousSession || undefined,
+  })
+  await writeSession(root, session)
+
+  console.log('')
+  console.log('─'.repeat(50))
+  console.log('Update complete!')
+  console.log(`  Symbols: ${allSymbols.length}`)
+  console.log(`  Modules: ${project.modules.length}`)
+  if (temporalData) {
+    console.log(`  Commits: ${temporalData.totalCommits}`)
+  }
+  console.log(`  Session: ${session.id}`)
+}
