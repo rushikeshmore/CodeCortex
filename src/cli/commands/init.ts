@@ -10,7 +10,7 @@ import { initParser, parseFile, languageFromPath } from '../../extraction/parser
 import { extractSymbols } from '../../extraction/symbols.js'
 import { extractImports } from '../../extraction/imports.js'
 import { extractCalls } from '../../extraction/calls.js'
-import { writeFile, ensureDir, cortexPath } from '../../utils/files.js'
+import { writeFile, writeJsonStream, ensureDir, cortexPath } from '../../utils/files.js'
 import { readFile } from 'node:fs/promises'
 import type { SymbolRecord, ImportEdge, CallEdge, ModuleNode, SymbolIndex, ProjectInfo } from '../../types/index.js'
 
@@ -38,26 +38,13 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   const allCalls: CallEdge[] = []
   let extractionErrors = 0
 
-  const MAX_PARSE_BYTES = 500_000 // 500KB — skip very large files to avoid WASM crashes
-
-  // Sort files by language to avoid V8 WASM OOM — loads one grammar at a time
-  const sortedFiles = [...project.files].sort((a, b) => {
-    const langA = languageFromPath(a.path) || ''
-    const langB = languageFromPath(b.path) || ''
-    return langA.localeCompare(langB)
-  })
-
   let parsed = 0
-  const parseable = sortedFiles.filter(f => languageFromPath(f.path) && f.bytes <= MAX_PARSE_BYTES).length
+  const parseable = project.files.filter(f => languageFromPath(f.path)).length
   const showProgress = parseable > 500
 
-  for (const file of sortedFiles) {
+  for (const file of project.files) {
     const lang = languageFromPath(file.path)
     if (!lang) continue
-    if (file.bytes > MAX_PARSE_BYTES) {
-      extractionErrors++
-      continue
-    }
 
     try {
       const tree = await parseFile(file.absolutePath, lang)
@@ -162,7 +149,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
     total: allSymbols.length,
     symbols: allSymbols,
   }
-  await writeFile(cortexPath(root, 'symbols.json'), JSON.stringify(symbolIndex, null, 2))
+  await writeJsonStream(cortexPath(root, 'symbols.json'), symbolIndex, 'symbols')
 
   // Write graph.json
   await writeGraph(root, graph)
@@ -195,7 +182,12 @@ export async function initCommand(opts: { root: string; days: string }): Promise
 
   // Step 6: Generate constitution
   console.log('Step 6/6: Generating constitution...')
-  await generateConstitution(root)
+  await generateConstitution(root, {
+    modules: moduleNodes,
+    entryPoints: project.entryPoints,
+    externalDeps,
+    temporal: temporalData,
+  })
   console.log('  Written: constitution.md')
   console.log('')
 

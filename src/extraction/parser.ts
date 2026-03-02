@@ -1,53 +1,57 @@
-import { Parser, Language, type Tree } from 'web-tree-sitter'
+import { createRequire } from 'node:module'
 import { readFile as fsRead } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { existsSync } from 'node:fs'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const require = createRequire(import.meta.url)
+const Parser = require('tree-sitter') as typeof import('tree-sitter')
 
-let parserReady = false
-let parser: Parser
+// Re-export types for consumers
+export type Tree = import('tree-sitter').Tree
+export type SyntaxNode = import('tree-sitter').SyntaxNode
 
-const languageCache = new Map<string, Language>()
+const parser = new Parser()
 
-const LANGUAGE_MAP: Record<string, string> = {
-  // Original 5
-  typescript: 'tree-sitter-typescript.wasm',
-  tsx: 'tree-sitter-tsx.wasm',
-  javascript: 'tree-sitter-javascript.wasm',
-  python: 'tree-sitter-python.wasm',
-  go: 'tree-sitter-go.wasm',
-  rust: 'tree-sitter-rust.wasm',
+// Lazy grammar loaders — each grammar is require()'d on first use
+type LanguageLoader = () => unknown
+
+const LANGUAGE_LOADERS: Record<string, LanguageLoader> = {
+  // TypeScript / JavaScript
+  typescript: () => require('tree-sitter-typescript').typescript,
+  tsx:        () => require('tree-sitter-typescript').tsx,
+  javascript: () => require('tree-sitter-javascript'),
+  // Python
+  python:    () => require('tree-sitter-python'),
+  // Go
+  go:        () => require('tree-sitter-go'),
+  // Rust
+  rust:      () => require('tree-sitter-rust'),
   // Systems
-  c: 'tree-sitter-c.wasm',
-  cpp: 'tree-sitter-cpp.wasm',
-  objc: 'tree-sitter-objc.wasm',
-  zig: 'tree-sitter-zig.wasm',
+  c:         () => require('tree-sitter-c'),
+  cpp:       () => require('tree-sitter-cpp'),
+  objc:      () => require('tree-sitter-objc'),
+  zig:       () => require('tree-sitter-zig'),
   // JVM
-  java: 'tree-sitter-java.wasm',
-  kotlin: 'tree-sitter-kotlin.wasm',
-  scala: 'tree-sitter-scala.wasm',
+  java:      () => require('tree-sitter-java'),
+  kotlin:    () => require('tree-sitter-kotlin'),
+  scala:     () => require('tree-sitter-scala'),
   // .NET
-  c_sharp: 'tree-sitter-c_sharp.wasm',
+  c_sharp:   () => require('tree-sitter-c-sharp'),
   // Mobile
-  swift: 'tree-sitter-swift.wasm',
-  dart: 'tree-sitter-dart.wasm',
+  swift:     () => require('tree-sitter-swift'),
+  dart:      () => require('tree-sitter-dart'),
   // Scripting
-  ruby: 'tree-sitter-ruby.wasm',
-  php: 'tree-sitter-php.wasm',
-  lua: 'tree-sitter-lua.wasm',
-  bash: 'tree-sitter-bash.wasm',
-  elixir: 'tree-sitter-elixir.wasm',
+  ruby:      () => require('tree-sitter-ruby'),
+  php:       () => require('tree-sitter-php').php,
+  lua:       () => require('tree-sitter-lua'),
+  bash:      () => require('tree-sitter-bash'),
+  elixir:    () => require('tree-sitter-elixir'),
   // Functional
-  ocaml: 'tree-sitter-ocaml.wasm',
-  elm: 'tree-sitter-elm.wasm',
-  elisp: 'tree-sitter-elisp.wasm',
-  rescript: 'tree-sitter-rescript.wasm',
+  ocaml:     () => require('tree-sitter-ocaml').ocaml,
+  elm:       () => require('tree-sitter-elm'),
+  elisp:     () => require('tree-sitter-elisp'),
   // Web3 / Other
-  solidity: 'tree-sitter-solidity.wasm',
-  vue: 'tree-sitter-vue.wasm',
-  ql: 'tree-sitter-ql.wasm',
+  solidity:  () => require('tree-sitter-solidity'),
+  vue:       () => require('tree-sitter-vue'),
+  ql:        () => require('tree-sitter-ql'),
 }
 
 export const EXTENSION_MAP: Record<string, string> = {
@@ -114,9 +118,6 @@ export const EXTENSION_MAP: Record<string, string> = {
   '.elm': 'elm',
   // Emacs Lisp
   '.el': 'elisp',
-  // ReScript
-  '.res': 'rescript',
-  '.resi': 'rescript',
   // Solidity
   '.sol': 'solidity',
   // Vue
@@ -125,57 +126,34 @@ export const EXTENSION_MAP: Record<string, string> = {
   '.ql': 'ql',
 }
 
-export async function initParser(): Promise<void> {
-  if (parserReady) return
-  await Parser.init()
-  parser = new Parser()
-  parserReady = true
-}
+const languageCache = new Map<string, unknown>()
 
-function findWasmDir(): string {
-  const candidates = [
-    join(__dirname, '..', '..', 'node_modules', 'tree-sitter-wasms', 'out'),
-    join(__dirname, '..', '..', '..', 'node_modules', 'tree-sitter-wasms', 'out'),
-    join(process.cwd(), 'node_modules', 'tree-sitter-wasms', 'out'),
-  ]
-  for (const dir of candidates) {
-    if (existsSync(dir)) return dir
-  }
-  throw new Error('tree-sitter-wasms not found. Run: npm install tree-sitter-wasms')
-}
-
-async function loadLanguage(lang: string): Promise<Language> {
+function loadLanguage(lang: string): unknown {
   const cached = languageCache.get(lang)
   if (cached) return cached
 
-  const wasmFile = LANGUAGE_MAP[lang]
-  if (!wasmFile) throw new Error(`Unsupported language: ${lang}`)
+  const loader = LANGUAGE_LOADERS[lang]
+  if (!loader) throw new Error(`Unsupported language: ${lang}`)
 
-  const wasmDir = findWasmDir()
-  const wasmPath = join(wasmDir, wasmFile)
-
-  if (!existsSync(wasmPath)) {
-    throw new Error(`WASM grammar not found: ${wasmPath}`)
-  }
-
-  const language = await Language.load(wasmPath)
+  const language = loader()
   languageCache.set(lang, language)
   return language
 }
 
+/** No-op — kept for backward compatibility with call sites. Native bindings need no async init. */
+export async function initParser(): Promise<void> {}
+
 export async function parseFile(filePath: string, language: string): Promise<Tree> {
-  await initParser()
-  const lang = await loadLanguage(language)
-  parser.setLanguage(lang)
+  const lang = loadLanguage(language)
+  parser.setLanguage(lang as Parameters<typeof parser.setLanguage>[0])
   const source = await fsRead(filePath, 'utf-8')
-  return parser.parse(source) as Tree
+  return parser.parse(source)
 }
 
-export async function parseSource(source: string, language: string): Promise<Tree> {
-  await initParser()
-  const lang = await loadLanguage(language)
-  parser.setLanguage(lang)
-  return parser.parse(source) as Tree
+export function parseSource(source: string, language: string): Tree {
+  const lang = loadLanguage(language)
+  parser.setLanguage(lang as Parameters<typeof parser.setLanguage>[0])
+  return parser.parse(source)
 }
 
 export function languageFromPath(filePath: string): string | null {
@@ -184,10 +162,5 @@ export function languageFromPath(filePath: string): string | null {
 }
 
 export function supportedLanguages(): string[] {
-  return Object.keys(LANGUAGE_MAP)
+  return Object.keys(LANGUAGE_LOADERS)
 }
-
-// Re-export types for consumers
-export type { Tree, Language }
-export { Parser }
-export type TreeSitterNode = import('web-tree-sitter').Node

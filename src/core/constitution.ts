@@ -1,21 +1,44 @@
-import type { CortexManifest, DependencyGraph, TemporalData } from '../types/index.js'
+import type { CortexManifest, TemporalData, ModuleNode } from '../types/index.js'
 import { readFile, writeFile, cortexPath } from '../utils/files.js'
 import { readManifest } from './manifest.js'
-import { readGraph } from './graph.js'
 import { listModuleDocs } from './modules.js'
 import { listDecisions } from './decisions.js'
 
-export async function generateConstitution(projectRoot: string): Promise<string> {
+export interface ConstitutionData {
+  modules?: ModuleNode[]
+  entryPoints?: string[]
+  externalDeps?: Record<string, string[]>
+  temporal?: TemporalData | null
+}
+
+export async function generateConstitution(projectRoot: string, data?: ConstitutionData): Promise<string> {
   const manifest = await readManifest(projectRoot)
-  const graph = await readGraph(projectRoot)
   const modules = await listModuleDocs(projectRoot)
   const decisions = await listDecisions(projectRoot)
 
-  // Read temporal data
-  let temporal: TemporalData | null = null
-  const temporalContent = await readFile(cortexPath(projectRoot, 'temporal.json'))
-  if (temporalContent) {
-    temporal = JSON.parse(temporalContent) as TemporalData
+  // Use passed-in data or read from disk (for small repos / standalone calls)
+  let graphModules = data?.modules
+  let entryPoints = data?.entryPoints
+  let externalDeps = data?.externalDeps
+  let temporal = data?.temporal ?? null
+
+  if (!graphModules) {
+    const graphContent = await readFile(cortexPath(projectRoot, 'graph.json'))
+    if (graphContent) {
+      try {
+        const graph = JSON.parse(graphContent)
+        graphModules = graph.modules
+        entryPoints = graph.entryPoints
+        externalDeps = graph.externalDeps
+      } catch { /* graph too large to parse, skip */ }
+    }
+  }
+
+  if (temporal === null && !data) {
+    const temporalContent = await readFile(cortexPath(projectRoot, 'temporal.json'))
+    if (temporalContent) {
+      try { temporal = JSON.parse(temporalContent) as TemporalData } catch { /* skip */ }
+    }
   }
 
   const lines: string[] = [
@@ -40,23 +63,25 @@ export async function generateConstitution(projectRoot: string): Promise<string>
   }
 
   // Architecture
-  if (graph) {
+  if (graphModules) {
     lines.push(`## Architecture`, '')
 
-    if (graph.entryPoints.length > 0) {
-      lines.push(`**Entry points:** ${graph.entryPoints.map(e => `\`${e}\``).join(', ')}`, '')
+    if (entryPoints && entryPoints.length > 0) {
+      lines.push(`**Entry points:** ${entryPoints.map(e => `\`${e}\``).join(', ')}`, '')
     }
 
     lines.push(`**Modules:**`)
-    for (const mod of graph.modules) {
+    for (const mod of graphModules) {
       lines.push(`- **${mod.name}** (${mod.files.length} files, ${mod.lines} lines) — ${mod.language}`)
     }
     lines.push('')
 
     // Key dependencies
-    const extDeps = Object.keys(graph.externalDeps)
-    if (extDeps.length > 0) {
-      lines.push(`**External dependencies:** ${extDeps.map(d => `\`${d}\``).join(', ')}`, '')
+    if (externalDeps) {
+      const extDeps = Object.keys(externalDeps)
+      if (extDeps.length > 0) {
+        lines.push(`**External dependencies:** ${extDeps.map(d => `\`${d}\``).join(', ')}`, '')
+      }
     }
   }
 

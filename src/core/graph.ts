@@ -1,5 +1,7 @@
 import type { DependencyGraph, ImportEdge, CallEdge, ModuleNode } from '../types/index.js'
-import { readFile, writeFile, cortexPath } from '../utils/files.js'
+import { readFile, writeFile, ensureDir, cortexPath } from '../utils/files.js'
+import { createWriteStream } from 'node:fs'
+import { dirname } from 'node:path'
 
 export async function readGraph(projectRoot: string): Promise<DependencyGraph | null> {
   const content = await readFile(cortexPath(projectRoot, 'graph.json'))
@@ -8,7 +10,45 @@ export async function readGraph(projectRoot: string): Promise<DependencyGraph | 
 }
 
 export async function writeGraph(projectRoot: string, graph: DependencyGraph): Promise<void> {
-  await writeFile(cortexPath(projectRoot, 'graph.json'), JSON.stringify(graph, null, 2))
+  const path = cortexPath(projectRoot, 'graph.json')
+  await ensureDir(dirname(path))
+  const stream = createWriteStream(path)
+  stream.setMaxListeners(0)
+
+  function waitDrain(): Promise<void> {
+    return new Promise((resolve) => stream.once('drain', resolve))
+  }
+
+  async function writeArray(arr: unknown[]): Promise<void> {
+    stream.write('[')
+    const BATCH = 1000
+    for (let i = 0; i < arr.length; i += BATCH) {
+      const end = Math.min(i + BATCH, arr.length)
+      const chunks: string[] = []
+      for (let j = i; j < end; j++) {
+        chunks.push((j > 0 ? ',' : '') + JSON.stringify(arr[j]))
+      }
+      if (!stream.write(chunks.join(''))) await waitDrain()
+    }
+    stream.write(']')
+  }
+
+  // Write scalar fields
+  stream.write(`{"generated":${JSON.stringify(graph.generated)},"modules":`)
+  await writeArray(graph.modules)
+  stream.write(',"imports":')
+  await writeArray(graph.imports)
+  stream.write(',"calls":')
+  await writeArray(graph.calls)
+  stream.write(`,"entryPoints":${JSON.stringify(graph.entryPoints)}`)
+  stream.write(`,"externalDeps":${JSON.stringify(graph.externalDeps)}`)
+  stream.write('}')
+
+  return new Promise((resolve, reject) => {
+    stream.on('finish', resolve)
+    stream.on('error', reject)
+    stream.end()
+  })
 }
 
 export function buildGraph(opts: {

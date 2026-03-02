@@ -1,4 +1,6 @@
-import type { Node as TSNode, Tree } from 'web-tree-sitter'
+import type Parser from 'tree-sitter'
+type TSNode = Parser.SyntaxNode
+type Tree = Parser.Tree
 import type { ImportEdge } from '../types/index.js'
 import { dirname, join } from 'node:path'
 import { existsSync } from 'node:fs'

@@ -12,4 +12,5 @@ export default defineConfig({
   sourcemap: true,
   dts: true,
   splitting: true,
+  external: ['tree-sitter', /^tree-sitter-/],
 })

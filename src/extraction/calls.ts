@@ -1,4 +1,6 @@
-import type { Node as TSNode, Tree } from 'web-tree-sitter'
+import type Parser from 'tree-sitter'
+type TSNode = Parser.SyntaxNode
+type Tree = Parser.Tree
 import type { CallEdge } from '../types/index.js'
 
 export function extractCalls(tree: Tree, file: string, language: string): CallEdge[] {

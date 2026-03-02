@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import { cortexPath, readFile, writeFile } from '../../utils/files.js'
+import { cortexPath, readFile, writeFile, writeJsonStream } from '../../utils/files.js'
 import { readManifest, updateManifest } from '../../core/manifest.js'
 import { discoverProject } from '../../core/discovery.js'
 import { analyzeTemporalData } from '../../git/temporal.js'
@@ -41,19 +41,9 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
   const allImports: ImportEdge[] = []
   const allCalls: CallEdge[] = []
 
-  const MAX_PARSE_BYTES = 500_000 // 500KB — skip very large files to avoid WASM crashes
-
-  // Sort files by language to avoid V8 WASM OOM — loads one grammar at a time
-  const sortedFiles = [...project.files].sort((a, b) => {
-    const langA = languageFromPath(a.path) || ''
-    const langB = languageFromPath(b.path) || ''
-    return langA.localeCompare(langB)
-  })
-
-  for (const file of sortedFiles) {
+  for (const file of project.files) {
     const lang = languageFromPath(file.path)
     if (!lang) continue
-    if (file.bytes > MAX_PARSE_BYTES) continue
     try {
       const tree = await parseFile(file.absolutePath, lang)
       const source = await fsRead(file.absolutePath, 'utf-8')
@@ -122,7 +112,7 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
     total: allSymbols.length,
     symbols: allSymbols,
   }
-  await writeFile(cortexPath(root, 'symbols.json'), JSON.stringify(symbolIndex, null, 2))
+  await writeJsonStream(cortexPath(root, 'symbols.json'), symbolIndex, 'symbols')
   await writeGraph(root, graph)
   if (temporalData) {
     await writeFile(cortexPath(root, 'temporal.json'), JSON.stringify(temporalData, null, 2))
@@ -137,7 +127,12 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
   })
 
   // Regenerate constitution
-  await generateConstitution(root)
+  await generateConstitution(root, {
+    modules: moduleNodes,
+    entryPoints: project.entryPoints,
+    externalDeps,
+    temporal: temporalData,
+  })
 
   // Create session log
   const diff = await getUncommittedDiff(root).catch(() => ({ filesChanged: [], summary: 'no changes' }))
