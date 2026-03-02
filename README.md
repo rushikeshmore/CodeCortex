@@ -1,10 +1,10 @@
 # CodeCortex
 
-> Persistent, AI-powered codebase knowledge layer. You shouldn't have to restructure your codebase for AI — CodeCortex gives AI the understanding automatically.
+> Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn your codebase every session.
 
 ## The Problem
 
-Every AI coding session starts from scratch. When context compacts or a new session begins, the AI must re-scan the entire codebase — same files, same tokens, same time. It's like hiring a new developer every session who has to re-learn your entire codebase before writing a single line.
+Every AI coding session starts from scratch. When context compacts or a new session begins, the AI re-scans the entire codebase. Same files, same tokens, same wasted time. It's like hiring a new developer every session who has to re-learn everything before writing a single line.
 
 **The data backs this up:**
 - AI agents increase defect risk by 30% on unfamiliar code ([CodeScene + Lund University, 2025](https://codescene.com/hubfs/whitepapers/AI-Coding-Assistants-and-Code-Quality.pdf))
@@ -13,15 +13,15 @@ Every AI coding session starts from scratch. When context compacts or a new sess
 
 ## The Solution
 
-CodeCortex pre-digests codebases into layered, structured knowledge files and serves them to any AI agent via MCP. Instead of re-understanding your codebase every session, the AI starts with knowledge.
+CodeCortex pre-digests codebases into layered knowledge files and serves them to any AI agent via MCP. Instead of re-understanding your codebase every session, the AI starts with knowledge.
 
-**Hybrid extraction:** tree-sitter WASM for precise structure (symbols, imports, calls) + host LLM for rich semantics (what modules do, why they're built that way). Zero extra API keys. Language-agnostic from day 1.
+**Hybrid extraction:** tree-sitter native N-API for structure (symbols, imports, calls across 27 languages) + host LLM for semantics (what modules do, why they're built that way). Zero extra API keys.
 
 ## Quick Start
 
 ```bash
 # Install
-npm install -g codecortex
+npm install -g codecortex-ai
 
 # Initialize knowledge for your project
 cd /path/to/your-project
@@ -50,30 +50,22 @@ Add to your MCP config:
 }
 ```
 
-## Architecture
+## What Gets Generated
+
+All knowledge lives in `.codecortex/` as flat files in your repo:
 
 ```
-ANY AI AGENT (Claude Code, Cursor, Codex, Windsurf, Zed)
-       │
-  MCP Protocol (stdio)
-       │
-┌──────▼──────────────────────────────────────────────┐
-│         CODECORTEX MCP SERVER (14 tools)             │
-│  READ (9): overview │ module │ briefing │ search │   │
-│            decisions │ graph │ lookup_symbol │        │
-│            change_coupling │ hotspots                │
-│  WRITE (5): analyze_module │ save_analysis │         │
-│             record_decision │ update_patterns │      │
-│             report_feedback                          │
-└──────┬──────────────────────────────────────────────┘
-       │ reads/writes
-┌──────▼──────────────────────────────────────────────┐
-│            .codecortex/ (flat files in repo)          │
-│  HOT: cortex.yaml │ constitution.md │ overview.md    │
-│       graph.json │ symbols.json │ temporal.json      │
-│  WARM: modules/*.md                                  │
-│  COLD: decisions/*.md │ sessions/*.md │ patterns.md  │
-└──────────────────────────────────────────────────────┘
+.codecortex/
+  cortex.yaml          # project manifest
+  constitution.md      # project overview for agents
+  overview.md          # module map + entry points
+  graph.json           # dependency graph (imports, calls, modules)
+  symbols.json         # full symbol index (functions, classes, types...)
+  temporal.json        # git coupling, hotspots, bug history
+  modules/*.md         # per-module deep analysis
+  decisions/*.md       # architectural decision records
+  sessions/*.md        # session change logs
+  patterns.md          # coding patterns and conventions
 ```
 
 ## Six Knowledge Layers
@@ -81,35 +73,35 @@ ANY AI AGENT (Claude Code, Cursor, Codex, Windsurf, Zed)
 | Layer | What | File |
 |-------|------|------|
 | 1. Structural | Modules, deps, symbols, entry points | `graph.json` + `symbols.json` |
-| 2. Semantic | What each module DOES, data flow, gotchas | `modules/*.md` |
-| 3. Temporal | Git behavioral fingerprint — coupling, hotspots, bug history | `temporal.json` |
-| 4. Decisions | WHY things are built this way | `decisions/*.md` |
-| 5. Patterns | HOW code is written here | `patterns.md` |
-| 6. Sessions | What CHANGED between sessions | `sessions/*.md` |
+| 2. Semantic | What each module does, data flow, gotchas | `modules/*.md` |
+| 3. Temporal | Git behavioral fingerprint - coupling, hotspots, bug history | `temporal.json` |
+| 4. Decisions | Why things are built this way | `decisions/*.md` |
+| 5. Patterns | How code is written here | `patterns.md` |
+| 6. Sessions | What changed between sessions | `sessions/*.md` |
 
-### The Temporal Layer — Our Killer Differentiator
+### The Temporal Layer
 
-The temporal layer tells agents *"if you touch file X, you MUST also touch file Y"* even when there's no import between them. This comes from git co-change analysis, not static code analysis.
+This is the killer differentiator. The temporal layer tells agents *"if you touch file X, you MUST also touch file Y"* even when there's no import between them. This comes from git co-change analysis, not static code analysis.
 
 Example from a real codebase:
-- `routes.ts` ↔ `worker.ts` co-changed 9/12 commits (75%) — **zero imports between them**
+- `routes.ts` and `worker.ts` co-changed in 9/12 commits (75%) with **zero imports between them**
 - Without this knowledge, an AI editing one file would produce a bug 75% of the time
 
-## MCP Tools
+## MCP Tools (14)
 
 ### Read Tools (9)
 
-| Tool | Description | Tier |
-|------|-------------|------|
-| `get_project_overview` | Constitution + overview + graph summary | HOT |
-| `get_module_context` | Module doc by name, includes temporal signals | WARM |
-| `get_session_briefing` | Changes since last session | COLD |
-| `search_knowledge` | Keyword search across all knowledge | COLD |
-| `get_decision_history` | Decision records filtered by topic | COLD |
-| `get_dependency_graph` | Import/export graph, filterable | HOT |
-| `lookup_symbol` | Symbol by name/file/kind | HOT |
-| `get_change_coupling` | "What files must I also edit if I touch X?" | HOT |
-| `get_hotspots` | Files ranked by risk (churn × coupling) | HOT |
+| Tool | Description |
+|------|-------------|
+| `get_project_overview` | Constitution + overview + graph summary |
+| `get_module_context` | Module doc by name, includes temporal signals |
+| `get_session_briefing` | Changes since last session |
+| `search_knowledge` | Keyword search across all knowledge |
+| `get_decision_history` | Decision records filtered by topic |
+| `get_dependency_graph` | Import/export graph, filterable |
+| `lookup_symbol` | Symbol by name/file/kind |
+| `get_change_coupling` | What files must I also edit if I touch X? |
+| `get_hotspots` | Files ranked by risk (churn x coupling) |
 
 ### Write Tools (5)
 
@@ -130,38 +122,41 @@ Example from a real codebase:
 | `codecortex update` | Re-extract changed files, update affected modules |
 | `codecortex status` | Show knowledge freshness, stale modules, symbol counts |
 
-## Progressive Disclosure
+## Token Efficiency
 
 CodeCortex uses a three-tier memory model to minimize token usage:
 
 ```
-Session start (HOT only):           ~4,300 tokens  ← full codebase understanding
-Working on a module (+WARM):         ~5,000 tokens  ← deep module knowledge
-Need coding patterns (+COLD):        ~5,900 tokens  ← every pattern + gotcha
+Session start (HOT only):           ~4,300 tokens
+Working on a module (+WARM):         ~5,000 tokens
+Need coding patterns (+COLD):        ~5,900 tokens
 
-vs. raw scan of entire codebase:    ~37,800 tokens  ← and still might miss things
+vs. raw scan of entire codebase:    ~37,800 tokens
 ```
 
-**Result: 85-90% token reduction, 80-85% fewer tool calls, 7-10x efficiency multiplier.**
+85-90% token reduction. 7-10x efficiency gain.
 
-## Supported Languages
+## Supported Languages (27)
 
-Tree-sitter WASM grammars ship for:
-- TypeScript / JavaScript
-- Python
-- Go
-- Rust
-
-More languages can be added via `.scm` query files.
+| Category | Languages |
+|----------|-----------|
+| Web | TypeScript, TSX, JavaScript |
+| Systems | C, C++, Objective-C, Rust, Zig, Go |
+| JVM | Java, Kotlin, Scala |
+| .NET | C# |
+| Mobile | Swift, Dart |
+| Scripting | Python, Ruby, PHP, Lua, Bash, Elixir |
+| Functional | OCaml, Elm, Emacs Lisp |
+| Other | Solidity, Vue, CodeQL |
 
 ## Tech Stack
 
 - TypeScript ESM, Node.js 20+
-- `web-tree-sitter` + `tree-sitter-wasms` — WASM extraction, zero native compilation
-- `@modelcontextprotocol/sdk` — MCP server
-- `commander` — CLI
-- `simple-git` — git integration
-- `yaml`, `zod`, `glob`, `chokidar`
+- `tree-sitter` (native N-API) + 27 language grammar packages
+- `@modelcontextprotocol/sdk` - MCP server
+- `commander` - CLI
+- `simple-git` - git integration
+- `yaml`, `zod`, `glob`
 
 ## License
 

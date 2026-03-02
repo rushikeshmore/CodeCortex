@@ -1,5 +1,5 @@
 {
-  "name": "codecortex",
+  "name": "codecortex-ai",
   "version": "0.1.0",
   "description": "Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into structured knowledge and serves to AI agents via MCP.",
   "type": "module",

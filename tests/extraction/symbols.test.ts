@@ -162,12 +162,18 @@ func helperFunc() {}
     expect(fn!.exported).toBe(true)
   })
 
-  it('does not extract struct from type_declaration (Go grammar: name on type_spec, not type_declaration)', () => {
-    // Known limitation: Go's type_declaration puts `name` on the child type_spec node,
-    // not on type_declaration itself. getName returns null → symbol skipped.
-    // TODO: Fix Go query to traverse into type_spec for name extraction.
+  it('extracts struct from type_declaration (traverses into type_spec for name)', () => {
     const t = symbols.find(s => s.name === 'Config')
-    expect(t).toBeUndefined()
+    expect(t).toBeDefined()
+    expect(t!.kind).toBe('type')
+    expect(t!.exported).toBe(true) // uppercase = exported in Go
+  })
+
+  it('extracts const declaration (traverses into const_spec for name)', () => {
+    const c = symbols.find(s => s.name === 'MaxRetries')
+    expect(c).toBeDefined()
+    expect(c!.kind).toBe('const')
+    expect(c!.exported).toBe(true) // uppercase
   })
 
   it('marks lowercase function as unexported', () => {

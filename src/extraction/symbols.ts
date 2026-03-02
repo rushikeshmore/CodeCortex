@@ -127,7 +127,20 @@ const GO_QUERY: SymbolQuery = {
   },
   getName(node: TSNode) {
     const nameNode = node.childForFieldName('name')
-    return nameNode?.text || null
+    if (nameNode) return nameNode.text
+
+    // Go wraps declarations: type_declaration→type_spec, const_declaration→const_spec, var_declaration→var_spec
+    // The name field is on the _spec child, not the _declaration itself
+    if (node.type === 'type_declaration' || node.type === 'const_declaration' || node.type === 'var_declaration') {
+      for (const child of node.namedChildren as TSNode[]) {
+        if (child.type === 'type_spec' || child.type === 'const_spec' || child.type === 'var_spec') {
+          const specName = child.childForFieldName('name')
+          if (specName) return specName.text
+        }
+      }
+    }
+
+    return null
   },
   getSignature(node: TSNode, source: string) {
     const startLine = node.startPosition.row
