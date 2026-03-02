@@ -2,6 +2,18 @@ import type { ChangeCoupling, Hotspot, BugRecord, TemporalData } from '../types/
 import type { CommitInfo } from './history.js'
 import { getCommitHistory } from './history.js'
 
+// Files that pollute temporal metrics (changed every release, not real code risk)
+const TEMPORAL_NOISE_FILES = new Set([
+  'CHANGELOG.md', 'CHANGES.md', 'HISTORY.md', 'NEWS.md',
+  'package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml',
+  'Cargo.lock', 'go.sum', 'poetry.lock', 'Pipfile.lock',
+])
+
+function isTemporalNoise(file: string): boolean {
+  const basename = file.split('/').pop() ?? ''
+  return TEMPORAL_NOISE_FILES.has(basename)
+}
+
 export async function analyzeTemporalData(root: string, days: number = 90): Promise<TemporalData> {
   const commits = await getCommitHistory(root, days)
 
@@ -24,6 +36,7 @@ export function getHotspots(commits: CommitInfo[], days: number): Hotspot[] {
 
   for (const commit of commits) {
     for (const file of commit.filesChanged) {
+      if (isTemporalNoise(file)) continue
       const existing = fileChanges.get(file) || { count: 0, lastDate: '' }
       existing.count++
       if (commit.date > existing.lastDate) {
@@ -73,6 +86,9 @@ export function getChangeCoupling(commits: CommitInfo[]): ChangeCoupling[] {
     for (const file of files) {
       fileCounts.set(file, (fileCounts.get(file) || 0) + 1)
     }
+
+    // Skip mega-commits for pairing (refactors/renames create noise, not real coupling)
+    if (files.length > 50) continue
 
     // Count pair co-changes
     for (let i = 0; i < files.length; i++) {
@@ -127,6 +143,7 @@ export function getBugArchaeology(commits: CommitInfo[]): BugRecord[] {
       .trim()
 
     for (const file of commit.filesChanged) {
+      if (isTemporalNoise(file)) continue
       const existing = fileRecords.get(file) || { fixCommits: 0, lessons: new Set<string>() }
       existing.fixCommits++
       if (lesson) existing.lessons.add(lesson)

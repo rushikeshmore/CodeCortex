@@ -38,9 +38,26 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   const allCalls: CallEdge[] = []
   let extractionErrors = 0
 
-  for (const file of project.files) {
+  const MAX_PARSE_BYTES = 500_000 // 500KB — skip very large files to avoid WASM crashes
+
+  // Sort files by language to avoid V8 WASM OOM — loads one grammar at a time
+  const sortedFiles = [...project.files].sort((a, b) => {
+    const langA = languageFromPath(a.path) || ''
+    const langB = languageFromPath(b.path) || ''
+    return langA.localeCompare(langB)
+  })
+
+  let parsed = 0
+  const parseable = sortedFiles.filter(f => languageFromPath(f.path) && f.bytes <= MAX_PARSE_BYTES).length
+  const showProgress = parseable > 500
+
+  for (const file of sortedFiles) {
     const lang = languageFromPath(file.path)
     if (!lang) continue
+    if (file.bytes > MAX_PARSE_BYTES) {
+      extractionErrors++
+      continue
+    }
 
     try {
       const tree = await parseFile(file.absolutePath, lang)
@@ -53,11 +70,15 @@ export async function initCommand(opts: { root: string; days: string }): Promise
       allSymbols.push(...symbols)
       allImports.push(...imports)
       allCalls.push(...calls)
-    } catch (err) {
+    } catch {
       extractionErrors++
-      // Continue with other files
+    }
+    parsed++
+    if (showProgress && parsed % 5000 === 0) {
+      process.stdout.write(`\r  Progress: ${parsed}/${parseable} files (${allSymbols.length} symbols)`)
     }
   }
+  if (showProgress) process.stdout.write('\r' + ' '.repeat(70) + '\r')
 
   console.log(`  Extracted ${allSymbols.length} symbols, ${allImports.length} imports, ${allCalls.length} call edges`)
   if (extractionErrors > 0) {
@@ -67,16 +88,17 @@ export async function initCommand(opts: { root: string; days: string }): Promise
 
   // Step 3: Build dependency graph
   console.log('Step 3/6: Building dependency graph...')
+  const MODULE_ROOTS = new Set(['src', 'lib', 'pkg', 'packages', 'apps', 'extensions', 'crates', 'internal', 'cmd', 'scripts', 'tools', 'rust'])
   const moduleNodes: ModuleNode[] = project.modules.map(modName => {
     const modFiles = project.files.filter(f => {
       const parts = f.path.split('/')
-      return (parts[0] === 'src' && parts[1] === modName) ||
-             (parts[0] === 'lib' && parts[1] === modName) ||
-             (parts[0] === 'pkg' && parts[1] === modName) ||
+      const topDir = parts[0] ?? ''
+      return (MODULE_ROOTS.has(topDir) && parts[1] === modName) ||
              (parts[0] === modName)
     })
+    const topDir = modFiles[0]?.path.split('/')[0] ?? 'src'
     return {
-      path: `src/${modName}`,
+      path: `${topDir}/${modName}`,
       name: modName,
       files: modFiles.map(f => f.path),
       language: modFiles[0]?.language || 'unknown',

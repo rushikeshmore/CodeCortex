@@ -15,8 +15,18 @@ export function extractImports(tree: Tree, file: string, language: string): Impo
       return extractGoImports(tree, file)
     case 'rust':
       return extractRustImports(tree, file)
+    case 'c':
+    case 'cpp':
+    case 'objc':
+      return extractCIncludes(tree, file)
+    case 'java':
+    case 'kotlin':
+    case 'c_sharp':
+    case 'scala':
+    case 'dart':
+      return extractJavaImports(tree, file)
     default:
-      return []
+      return extractGenericImports(tree, file)
   }
 }
 
@@ -181,6 +191,80 @@ function extractRustImports(tree: Tree, file: string): ImportEdge[] {
     for (const child of node.namedChildren as TSNode[]) {
       walk(child)
     }
+  }
+
+  walk(tree.rootNode)
+  return imports
+}
+
+function extractCIncludes(tree: Tree, file: string): ImportEdge[] {
+  const imports: ImportEdge[] = []
+
+  function walk(node: TSNode) {
+    if (node.type === 'preproc_include') {
+      const pathNode = node.childForFieldName('path')
+      if (pathNode) {
+        const raw = pathNode.text.replace(/['"<>]/g, '')
+        imports.push({ source: file, target: raw, specifiers: ['*'] })
+      }
+    }
+    for (const child of node.namedChildren as TSNode[]) walk(child)
+  }
+
+  walk(tree.rootNode)
+  return imports
+}
+
+function extractJavaImports(tree: Tree, file: string): ImportEdge[] {
+  const imports: ImportEdge[] = []
+
+  function walk(node: TSNode) {
+    if (node.type === 'import_declaration') {
+      // Java imports are like: import java.util.List;
+      // The child is a scoped_identifier chain
+      for (const child of node.namedChildren as TSNode[]) {
+        if (child.type === 'scoped_identifier' || child.type === 'identifier') {
+          imports.push({ source: file, target: child.text, specifiers: ['*'] })
+          break
+        }
+      }
+    }
+    for (const child of node.namedChildren as TSNode[]) walk(child)
+  }
+
+  walk(tree.rootNode)
+  return imports
+}
+
+function extractGenericImports(tree: Tree, file: string): ImportEdge[] {
+  const imports: ImportEdge[] = []
+  const importNodeTypes = new Set([
+    'preproc_include', 'import_declaration', 'import_statement',
+    'import_from_statement', 'use_declaration', 'namespace_use_declaration',
+  ])
+
+  function walk(node: TSNode) {
+    if (importNodeTypes.has(node.type)) {
+      const pathNode = node.childForFieldName('path') ||
+                       node.childForFieldName('source') ||
+                       node.childForFieldName('module_name')
+
+      if (pathNode) {
+        const raw = pathNode.text.replace(/['"<>]/g, '')
+        imports.push({ source: file, target: raw, specifiers: ['*'] })
+      } else {
+        // Fallback: first named child that looks like a path
+        for (const child of node.namedChildren as TSNode[]) {
+          if (child.type === 'scoped_identifier' || child.type === 'dotted_name' ||
+              child.type === 'string_literal' || child.type === 'string') {
+            imports.push({ source: file, target: child.text.replace(/['"]/g, ''), specifiers: ['*'] })
+            break
+          }
+        }
+      }
+      return
+    }
+    for (const child of node.namedChildren as TSNode[]) walk(child)
   }
 
   walk(tree.rootNode)

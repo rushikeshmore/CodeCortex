@@ -41,9 +41,19 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
   const allImports: ImportEdge[] = []
   const allCalls: CallEdge[] = []
 
-  for (const file of project.files) {
+  const MAX_PARSE_BYTES = 500_000 // 500KB — skip very large files to avoid WASM crashes
+
+  // Sort files by language to avoid V8 WASM OOM — loads one grammar at a time
+  const sortedFiles = [...project.files].sort((a, b) => {
+    const langA = languageFromPath(a.path) || ''
+    const langB = languageFromPath(b.path) || ''
+    return langA.localeCompare(langB)
+  })
+
+  for (const file of sortedFiles) {
     const lang = languageFromPath(file.path)
     if (!lang) continue
+    if (file.bytes > MAX_PARSE_BYTES) continue
     try {
       const tree = await parseFile(file.absolutePath, lang)
       const source = await fsRead(file.absolutePath, 'utf-8')
@@ -55,13 +65,17 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
 
   // Rebuild graph
   console.log('Rebuilding dependency graph...')
+  const MODULE_ROOTS = new Set(['src', 'lib', 'pkg', 'packages', 'apps', 'extensions', 'crates', 'internal', 'cmd', 'scripts', 'tools', 'rust'])
   const moduleNodes = project.modules.map(modName => {
     const modFiles = project.files.filter(f => {
       const parts = f.path.split('/')
-      return (parts[0] === 'src' && parts[1] === modName)
+      const topDir = parts[0] ?? ''
+      return (MODULE_ROOTS.has(topDir) && parts[1] === modName) ||
+             (parts[0] === modName)
     })
+    const topDir = modFiles[0]?.path.split('/')[0] ?? 'src'
     return {
-      path: `src/${modName}`,
+      path: `${topDir}/${modName}`,
       name: modName,
       files: modFiles.map(f => f.path),
       language: modFiles[0]?.language || 'unknown',

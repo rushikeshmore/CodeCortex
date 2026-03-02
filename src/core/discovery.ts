@@ -130,24 +130,17 @@ async function walkDirectory(root: string, baseRoot: string): Promise<string[]> 
 
 function detectModules(root: string, files: DiscoveredFile[]): string[] {
   // Detect top-level directories under src/ (or equivalent)
+  const MODULE_ROOTS = new Set(['src', 'lib', 'pkg', 'packages', 'apps', 'extensions', 'crates', 'internal', 'cmd', 'scripts', 'tools', 'rust'])
   const srcDirs = new Set<string>()
 
   for (const file of files) {
     const parts = file.path.split('/')
-    if (parts.length >= 2) {
+    if (parts.length >= 3) {
+      const topDir = parts[0]
       const dir = parts[1]
-      if (!dir) continue
+      if (!topDir || !dir) continue
 
-      // src/scoring/compute.ts → "scoring"
-      if (parts[0] === 'src' && parts.length >= 3) {
-        srcDirs.add(dir)
-      }
-      // lib/scoring/compute.ts → "scoring"
-      else if (parts[0] === 'lib' && parts.length >= 3) {
-        srcDirs.add(dir)
-      }
-      // pkg/scoring/compute.ts → "scoring" (Go style)
-      else if (parts[0] === 'pkg' && parts.length >= 3) {
+      if (MODULE_ROOTS.has(topDir)) {
         srcDirs.add(dir)
       }
     }

@@ -14,7 +14,7 @@ export function extractCalls(tree: Tree, file: string, language: string): CallEd
     case 'rust':
       return extractRustCalls(tree, file)
     default:
-      return []
+      return extractGenericCalls(tree, file)
   }
 }
 
@@ -175,6 +175,51 @@ function extractRustCalls(tree: Tree, file: string): CallEdge[] {
       const funcNode = node.childForFieldName('function')
       if (funcNode) {
         const callee = funcNode.text.split('::').pop() || funcNode.text
+        const caller = findEnclosing(node)
+        const key = `${caller}:${callee}:${node.startPosition.row}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          calls.push({ caller: `${file}:${caller}`, callee, file, line: node.startPosition.row + 1 })
+        }
+      }
+    }
+    for (const child of node.namedChildren as TSNode[]) walk(child)
+  }
+
+  walk(tree.rootNode)
+  return calls
+}
+
+function extractGenericCalls(tree: Tree, file: string): CallEdge[] {
+  const calls: CallEdge[] = []
+  const seen = new Set<string>()
+
+  function findEnclosing(node: TSNode): string {
+    let current = node.parent
+    while (current) {
+      if (current.type.includes('function') || current.type.includes('method')) {
+        const name = current.childForFieldName('name')
+        if (name) return name.text
+      }
+      current = current.parent
+    }
+    return '<module>'
+  }
+
+  function walk(node: TSNode) {
+    if (node.type === 'call_expression' || node.type === 'call') {
+      const funcNode = node.childForFieldName('function') || node.childForFieldName('method')
+      if (funcNode) {
+        let callee: string
+        if (funcNode.type.includes('member') || funcNode.type.includes('selector') || funcNode.type === 'attribute') {
+          const prop = funcNode.childForFieldName('property') ||
+                       funcNode.childForFieldName('field') ||
+                       funcNode.childForFieldName('attribute')
+          callee = prop?.text || funcNode.text
+        } else {
+          callee = funcNode.text
+        }
+
         const caller = findEnclosing(node)
         const key = `${caller}:${callee}:${node.startPosition.row}`
         if (!seen.has(key)) {
