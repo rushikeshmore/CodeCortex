@@ -59,7 +59,7 @@ export async function countLines(path: string): Promise<number> {
 }
 
 /** Stream-write a large array-based JSON object to avoid V8 string length limits. */
-export async function writeJsonStream(path: string, obj: Record<string, unknown>, arrayKey: string): Promise<void> {
+export async function writeJsonStream<T extends object>(path: string, obj: T, arrayKey: string & keyof T): Promise<void> {
   await ensureDir(dirname(path))
   const arr = obj[arrayKey] as unknown[]
   const stream = createWriteStream(path)
