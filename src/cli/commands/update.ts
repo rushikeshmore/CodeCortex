@@ -15,6 +15,7 @@ import { buildGraph, writeGraph, enrichCouplingWithImports } from '../../core/gr
 import { generateConstitution } from '../../core/constitution.js'
 import { createSession, writeSession, getLatestSession } from '../../core/sessions.js'
 import { readFile as fsRead } from 'node:fs/promises'
+import { generateStructuralModuleDocs } from '../../core/module-gen.js'
 import type { SymbolRecord, ImportEdge, CallEdge, SymbolIndex } from '../../types/index.js'
 
 export async function updateCommand(opts: { root: string; days: string }): Promise<void> {
@@ -117,6 +118,13 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
   if (temporalData) {
     await writeFile(cortexPath(root, 'temporal.json'), JSON.stringify(temporalData, null, 2))
   }
+
+  // Generate structural module docs (skip existing)
+  await generateStructuralModuleDocs(root, {
+    graph,
+    symbols: allSymbols,
+    temporal: temporalData,
+  })
 
   // Update manifest
   await updateManifest(root, {

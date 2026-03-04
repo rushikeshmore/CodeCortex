@@ -7,3 +7,4 @@ dist/
 .codecortex/
 tests/repos/
 tsconfig.tsbuildinfo
+site/

@@ -1,6 +1,6 @@
 {
   "name": "codecortex-ai",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into structured knowledge and serves to AI agents via MCP.",
   "type": "module",
   "bin": {
@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/rushikeshmore/CodeCortex/issues"
   },
-  "homepage": "https://github.com/rushikeshmore/CodeCortex#readme",
+  "homepage": "https://codecortex-ai.vercel.app",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
     "commander": "^13.0.0",

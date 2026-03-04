@@ -1,17 +1,25 @@
 #!/usr/bin/env node
 
+import { createRequire } from 'node:module'
 import { Command } from 'commander'
 import { initCommand } from './commands/init.js'
 import { serveCommand } from './commands/serve.js'
 import { updateCommand } from './commands/update.js'
 import { statusCommand } from './commands/status.js'
+import { symbolsCommand } from './commands/symbols.js'
+import { searchCommand } from './commands/search.js'
+import { modulesCommand } from './commands/modules.js'
+import { hotspotsCommand } from './commands/hotspots.js'
+
+const require = createRequire(import.meta.url)
+const { version } = require('../../package.json') as { version: string }
 
 const program = new Command()
 
 program
   .name('codecortex')
   .description('Persistent, AI-powered codebase knowledge layer')
-  .version('0.1.0')
+  .version(version)
 
 program
   .command('init')
@@ -38,5 +46,35 @@ program
   .description('Show knowledge freshness, stale modules, and symbol counts')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .action(statusCommand)
+
+program
+  .command('symbols [query]')
+  .description('Browse and filter the symbol index')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .option('-k, --kind <kind>', 'Filter by kind: function, class, interface, type, const, enum, method, property, variable')
+  .option('-f, --file <path>', 'Filter by file path (partial match)')
+  .option('-e, --exported', 'Show only exported symbols')
+  .option('-l, --limit <number>', 'Max results', '30')
+  .action((query, opts) => symbolsCommand(query, opts))
+
+program
+  .command('search <query>')
+  .description('Search across all CodeCortex knowledge files')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .option('-l, --limit <number>', 'Max results', '20')
+  .action((query, opts) => searchCommand(query, opts))
+
+program
+  .command('modules [name]')
+  .description('List modules or deep-dive into a specific module')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action((name, opts) => modulesCommand(name, opts))
+
+program
+  .command('hotspots')
+  .description('Show files ranked by risk: churn + coupling + bug history')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .option('-l, --limit <number>', 'Number of files to show', '15')
+  .action(hotspotsCommand)
 
 program.parse()
