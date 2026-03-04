@@ -2,6 +2,8 @@
 
 > Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn your codebase every session.
 
+[Website](https://codecortex-ai.vercel.app) · [npm](https://www.npmjs.com/package/codecortex-ai) · [GitHub](https://github.com/rushikeshmore/CodeCortex)
+
 ## The Problem
 
 Every AI coding session starts from scratch. When context compacts or a new session begins, the AI re-scans the entire codebase. Same files, same tokens, same wasted time. It's like hiring a new developer every session who has to re-learn everything before writing a single line.

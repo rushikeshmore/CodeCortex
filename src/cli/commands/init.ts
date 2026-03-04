@@ -12,6 +12,7 @@ import { extractImports } from '../../extraction/imports.js'
 import { extractCalls } from '../../extraction/calls.js'
 import { writeFile, writeJsonStream, ensureDir, cortexPath } from '../../utils/files.js'
 import { readFile } from 'node:fs/promises'
+import { generateStructuralModuleDocs } from '../../core/module-gen.js'
 import type { SymbolRecord, ImportEdge, CallEdge, ModuleNode, SymbolIndex, ProjectInfo } from '../../types/index.js'
 
 export async function initCommand(opts: { root: string; days: string }): Promise<void> {
@@ -177,7 +178,14 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   // Write patterns.md (empty template)
   await writeFile(cortexPath(root, 'patterns.md'), '# Coding Patterns\n\nNo patterns recorded yet. Use `update_patterns` to add patterns.\n')
 
-  console.log('  Written: cortex.yaml, symbols.json, graph.json, temporal.json, overview.md, patterns.md')
+  // Generate structural module docs
+  const moduleDocsGenerated = await generateStructuralModuleDocs(root, {
+    graph,
+    symbols: allSymbols,
+    temporal: temporalData,
+  })
+
+  console.log(`  Written: cortex.yaml, symbols.json, graph.json, temporal.json, overview.md, patterns.md, ${moduleDocsGenerated} module docs`)
   console.log('')
 
   // Step 6: Generate constitution
