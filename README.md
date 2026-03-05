@@ -4,6 +4,10 @@
 
 [Website](https://codecortex-ai.vercel.app) · [npm](https://www.npmjs.com/package/codecortex-ai) · [GitHub](https://github.com/rushikeshmore/CodeCortex)
 
+<a href="https://glama.ai/mcp/servers/@rushikeshmore/codecortex">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@rushikeshmore/codecortex/badge" alt="codecortex MCP server" />
+</a>
+
 ## The Problem
 
 Every AI coding session starts from scratch. When context compacts or a new session begins, the AI re-scans the entire codebase. Same files, same tokens, same wasted time. It's like hiring a new developer every session who has to re-learn everything before writing a single line.
