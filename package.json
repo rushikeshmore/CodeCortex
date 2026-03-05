@@ -1,6 +1,6 @@
 {
   "name": "codecortex-ai",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into structured knowledge and serves to AI agents via MCP.",
   "type": "module",
   "bin": {
