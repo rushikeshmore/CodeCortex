@@ -17,7 +17,7 @@ Every AI coding session starts from scratch. When context compacts or a new sess
 
 CodeCortex pre-digests codebases into layered knowledge files and serves them to any AI agent via MCP. Instead of re-understanding your codebase every session, the AI starts with knowledge.
 
-**Hybrid extraction:** tree-sitter native N-API for structure (symbols, imports, calls across 27 languages) + host LLM for semantics (what modules do, why they're built that way). Zero extra API keys.
+**Hybrid extraction:** tree-sitter native N-API for structure (symbols, imports, calls across 28 languages) + host LLM for semantics (what modules do, why they're built that way). Zero extra API keys.
 
 ## Quick Start
 
@@ -138,11 +138,11 @@ vs. raw scan of entire codebase:    ~37,800 tokens
 
 85-90% token reduction. 7-10x efficiency gain.
 
-## Supported Languages (27)
+## Supported Languages (28)
 
 | Category | Languages |
 |----------|-----------|
-| Web | TypeScript, TSX, JavaScript |
+| Web | TypeScript, TSX, JavaScript, Liquid |
 | Systems | C, C++, Objective-C, Rust, Zig, Go |
 | JVM | Java, Kotlin, Scala |
 | .NET | C# |
@@ -154,7 +154,7 @@ vs. raw scan of entire codebase:    ~37,800 tokens
 ## Tech Stack
 
 - TypeScript ESM, Node.js 20+
-- `tree-sitter` (native N-API) + 27 language grammar packages
+- `tree-sitter` (native N-API) + 28 language grammar packages
 - `@modelcontextprotocol/sdk` - MCP server
 - `commander` - CLI
 - `simple-git` - git integration
