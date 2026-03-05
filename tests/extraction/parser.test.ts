@@ -69,15 +69,16 @@ describe('languageFromPath', () => {
 })
 
 describe('supportedLanguages', () => {
-  it('returns all 27 supported languages', () => {
+  it('returns all 28 supported languages', () => {
     const langs = supportedLanguages()
-    expect(langs.length).toBe(27)
+    expect(langs.length).toBe(28)
     expect(langs).toContain('typescript')
     expect(langs).toContain('python')
     expect(langs).toContain('go')
     expect(langs).toContain('rust')
     expect(langs).toContain('c')
     expect(langs).toContain('java')
+    expect(langs).toContain('liquid')
   })
 })
 
