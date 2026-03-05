@@ -1,10 +1,10 @@
 {
   "name": "codecortex-ai",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into structured knowledge and serves to AI agents via MCP.",
   "type": "module",
   "bin": {
-    "codecortex": "./dist/cli/index.js"
+    "codecortex": "dist/cli/index.js"
   },
   "scripts": {
     "dev": "tsx watch src/cli/index.ts",
