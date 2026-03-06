@@ -10,6 +10,7 @@ import { symbolsCommand } from './commands/symbols.js'
 import { searchCommand } from './commands/search.js'
 import { modulesCommand } from './commands/modules.js'
 import { hotspotsCommand } from './commands/hotspots.js'
+import { hookInstallCommand, hookUninstallCommand, hookStatusCommand } from './commands/hook.js'
 
 const require = createRequire(import.meta.url)
 const { version } = require('../../package.json') as { version: string }
@@ -76,5 +77,19 @@ program
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .option('-l, --limit <number>', 'Number of files to show', '15')
   .action(hotspotsCommand)
+
+const hook = program.command('hook').description('Manage git hooks for auto-updating knowledge')
+hook.command('install')
+  .description('Install post-commit and post-merge hooks')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action(hookInstallCommand)
+hook.command('uninstall')
+  .description('Remove CodeCortex hooks (preserves other hooks)')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action(hookUninstallCommand)
+hook.command('status')
+  .description('Show hook installation state and knowledge freshness')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action(hookStatusCommand)
 
 program.parse()
