@@ -42,6 +42,12 @@ Hybrid extraction:
 - `codecortex serve` - start MCP server
 - `codecortex update` - re-extract changed files → update modules
 - `codecortex status` - knowledge freshness, stale modules, symbol counts
+- `codecortex symbols [query]` - browse and filter the symbol index
+- `codecortex search <query>` - search across all knowledge files
+- `codecortex modules [name]` - list modules or deep-dive into one
+- `codecortex hotspots` - files ranked by risk (churn + coupling + bugs)
+- `codecortex hook install|uninstall|status` - manage git hooks for auto-update
+- `codecortex upgrade` - check for and install latest version
 
 ## MCP Tools (14)
 Read (9): get_project_overview, get_module_context, get_session_briefing, search_knowledge, get_decision_history, get_dependency_graph, lookup_symbol, get_change_coupling, get_hotspots

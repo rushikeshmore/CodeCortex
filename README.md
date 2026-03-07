@@ -127,6 +127,12 @@ Example from a real codebase:
 | `codecortex serve` | Start MCP server (stdio transport) |
 | `codecortex update` | Re-extract changed files, update affected modules |
 | `codecortex status` | Show knowledge freshness, stale modules, symbol counts |
+| `codecortex symbols [query]` | Browse and filter the symbol index |
+| `codecortex search <query>` | Search across all CodeCortex knowledge files |
+| `codecortex modules [name]` | List modules or deep-dive into a specific module |
+| `codecortex hotspots` | Show files ranked by risk: churn + coupling + bug history |
+| `codecortex hook install\|uninstall\|status` | Manage git hooks for auto-updating knowledge |
+| `codecortex upgrade` | Check for and install the latest version |
 
 ## Token Efficiency
 
