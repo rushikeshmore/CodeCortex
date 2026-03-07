@@ -1,7 +1,7 @@
 {
   "name": "codecortex-ai",
-  "version": "0.4.0",
-  "description": "Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into structured knowledge and serves to AI agents via MCP.",
+  "version": "0.4.1",
+  "description": "Permanent codebase memory for AI agents — extracts symbols, deps, and patterns, serves via MCP",
   "type": "module",
   "bin": {
     "codecortex": "dist/cli/index.js"

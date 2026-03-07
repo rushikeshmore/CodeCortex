@@ -13,6 +13,7 @@ import { hotspotsCommand } from './commands/hotspots.js'
 import { hookInstallCommand, hookUninstallCommand, hookStatusCommand } from './commands/hook.js'
 import { upgradeCommand } from './commands/upgrade.js'
 import { checkForUpdate, shouldNotify, renderUpdateNotification } from './utils/version-check.js'
+import { formatHelp } from './grouped-help.js'
 
 const require = createRequire(import.meta.url)
 const { version } = require('../../package.json') as { version: string }
@@ -26,32 +27,33 @@ const program = new Command()
 
 program
   .name('codecortex')
-  .description('Persistent, AI-powered codebase knowledge layer')
+  .description('Permanent codebase memory for AI agents — extracts symbols, deps, and patterns, serves via MCP')
   .version(version)
+  .configureHelp({ formatHelp })
 
 program
   .command('init')
-  .description('Initialize codebase knowledge: discover files, extract symbols, analyze git history')
+  .description('Initialize knowledge: discover files, extract symbols, analyze git')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .option('-d, --days <number>', 'Days of git history to analyze', '90')
   .action(initCommand)
 
 program
   .command('serve')
-  .description('Start MCP server (stdio transport) for AI agent access')
+  .description('Start MCP server for AI agent access')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .action(serveCommand)
 
 program
   .command('update')
-  .description('Update knowledge for changed files since last session')
+  .description('Update knowledge for changed files')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .option('-d, --days <number>', 'Days of git history to re-analyze', '90')
   .action(updateCommand)
 
 program
   .command('status')
-  .description('Show knowledge freshness, stale modules, and symbol counts')
+  .description('Show knowledge freshness and symbol counts')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .action(statusCommand)
 
@@ -67,20 +69,20 @@ program
 
 program
   .command('search <query>')
-  .description('Search across all CodeCortex knowledge files')
+  .description('Search across all knowledge files')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .option('-l, --limit <number>', 'Max results', '20')
   .action((query, opts) => searchCommand(query, opts))
 
 program
   .command('modules [name]')
-  .description('List modules or deep-dive into a specific module')
+  .description('List modules or deep-dive into one')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .action((name, opts) => modulesCommand(name, opts))
 
 program
   .command('hotspots')
-  .description('Show files ranked by risk: churn + coupling + bug history')
+  .description('Files ranked by risk: churn + coupling + bugs')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .option('-l, --limit <number>', 'Number of files to show', '15')
   .action(hotspotsCommand)
@@ -101,7 +103,7 @@ hook.command('status')
 
 program
   .command('upgrade')
-  .description('Check for and install the latest version of CodeCortex')
+  .description('Check for and install the latest version')
   .action(() => upgradeCommand(version))
 
 // Wrap parse so we can show update notification after the command completes
