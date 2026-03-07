@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { cortexPath, readFile, writeFile, writeJsonStream } from '../../utils/files.js'
 import { readManifest, updateManifest } from '../../core/manifest.js'
-import { discoverProject } from '../../core/discovery.js'
+import { discoverProject, buildModuleNodes } from '../../core/discovery.js'
 import { analyzeTemporalData } from '../../git/temporal.js'
 import { isGitRepo } from '../../git/history.js'
 import { getUncommittedDiff } from '../../git/diff.js'
@@ -56,24 +56,7 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
 
   // Rebuild graph
   console.log('Rebuilding dependency graph...')
-  const MODULE_ROOTS = new Set(['src', 'lib', 'pkg', 'packages', 'apps', 'extensions', 'crates', 'internal', 'cmd', 'scripts', 'tools', 'rust'])
-  const moduleNodes = project.modules.map(modName => {
-    const modFiles = project.files.filter(f => {
-      const parts = f.path.split('/')
-      const topDir = parts[0] ?? ''
-      return (MODULE_ROOTS.has(topDir) && parts[1] === modName) ||
-             (parts[0] === modName)
-    })
-    const topDir = modFiles[0]?.path.split('/')[0] ?? 'src'
-    return {
-      path: `${topDir}/${modName}`,
-      name: modName,
-      files: modFiles.map(f => f.path),
-      language: modFiles[0]?.language || 'unknown',
-      lines: modFiles.reduce((sum, f) => sum + f.lines, 0),
-      symbols: allSymbols.filter(s => modFiles.some(f => f.path === s.file)).length,
-    }
-  })
+  const moduleNodes = buildModuleNodes(project.modules, project.files, allSymbols)
 
   const externalDeps: Record<string, string[]> = {}
   for (const file of project.files) {
