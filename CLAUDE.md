@@ -49,9 +49,11 @@ Hybrid extraction:
 - `codecortex hook install|uninstall|status` - manage git hooks for auto-update
 - `codecortex upgrade` - check for and install latest version
 
-## MCP Tools (14)
-Read (9): get_project_overview, get_module_context, get_session_briefing, search_knowledge, get_decision_history, get_dependency_graph, lookup_symbol, get_change_coupling, get_hotspots
+## MCP Tools (15)
+Read (10): get_project_overview, get_module_context, get_session_briefing, search_knowledge, get_decision_history, get_dependency_graph, lookup_symbol, get_change_coupling, get_hotspots, get_edit_briefing
 Write (5): analyze_module, save_module_analysis, record_decision, update_patterns, report_feedback
+
+All read tools include `_freshness` metadata (status, lastAnalyzed, filesChangedSince, changedFiles, message).
 
 ## Pre-Publish Checklist
 Run ALL of these before `npm publish`. Do not skip any step.

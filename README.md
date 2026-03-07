@@ -2,8 +2,8 @@
 
 Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn your codebase every session.
 
-> **⚠️ If you're on v0.3.x or earlier, update now:** `npm install -g codecortex-ai@latest`
-> v0.4.2 fixes broken installs, adds auto-update notifications, git hooks, and grouped CLI help.
+> **⚠️ If you're on v0.4.3 or earlier, update now:** `npm install -g codecortex-ai@latest`
+> v0.4.4 adds freshness flags on all MCP responses and `get_edit_briefing` — a pre-edit risk briefing tool.
 
 [Website](https://codecortex-ai.vercel.app) · [npm](https://www.npmjs.com/package/codecortex-ai) · [GitHub](https://github.com/rushikeshmore/CodeCortex)
 
@@ -98,9 +98,9 @@ Example from a real codebase:
 - `routes.ts` and `worker.ts` co-changed in 9/12 commits (75%) with **zero imports between them**
 - Without this knowledge, an AI editing one file would produce a bug 75% of the time
 
-## MCP Tools (14)
+## MCP Tools (15)
 
-### Read Tools (9)
+### Read Tools (10)
 
 | Tool | Description |
 |------|-------------|
@@ -113,6 +113,9 @@ Example from a real codebase:
 | `lookup_symbol` | Symbol by name/file/kind |
 | `get_change_coupling` | What files must I also edit if I touch X? |
 | `get_hotspots` | Files ranked by risk (churn x coupling) |
+| `get_edit_briefing` | **NEW** — Pre-edit risk briefing: co-change warnings, hidden deps, bug history, importers |
+
+All read tools include `_freshness` metadata indicating how up-to-date the knowledge is.
 
 ### Write Tools (5)
 

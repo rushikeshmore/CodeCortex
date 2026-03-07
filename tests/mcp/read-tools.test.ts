@@ -10,7 +10,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createFixture, type Fixture } from '../fixtures/setup.js'
 import { readFile, cortexPath } from '../../src/utils/files.js'
 import { readManifest } from '../../src/core/manifest.js'
-import { readGraph, getModuleDependencies, getMostImportedFiles } from '../../src/core/graph.js'
+import { readGraph, getModuleDependencies, getMostImportedFiles, getFileImporters } from '../../src/core/graph.js'
 import { readModuleDoc, listModuleDocs } from '../../src/core/modules.js'
 import { listSessions, getLatestSession } from '../../src/core/sessions.js'
 import { listDecisions } from '../../src/core/decisions.js'
@@ -228,5 +228,82 @@ describe('get_hotspots (tool 9)', () => {
     expect(temporal.bugHistory).toHaveLength(1)
     expect(temporal.bugHistory[0]!.fixCommits).toBe(3)
     expect(temporal.bugHistory[0]!.lessons).toHaveLength(2)
+  })
+})
+
+describe('get_edit_briefing (tool 10)', () => {
+  it('returns risk assessment for a volatile file', async () => {
+    const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
+    const temporal: TemporalData = JSON.parse(content!)
+    const graph = await readGraph(fixture.root)
+
+    const file = 'processor.ts'
+    const couplings = temporal.coupling
+      .filter(c => c.fileA.includes(file) || c.fileB.includes(file))
+
+    expect(couplings.length).toBeGreaterThan(0)
+
+    const hotspot = temporal.hotspots.find(h => h.file.includes(file))
+    expect(hotspot).toBeDefined()
+    expect(hotspot!.stability).toBe('volatile')
+    expect(hotspot!.changes).toBe(8)
+  })
+
+  it('identifies co-change partners for a file', async () => {
+    const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
+    const temporal: TemporalData = JSON.parse(content!)
+
+    const file = 'processor.ts'
+    const partners = temporal.coupling
+      .filter(c => c.fileA.includes(file) || c.fileB.includes(file))
+      .map(c => c.fileA.includes(file) ? c.fileB : c.fileA)
+
+    expect(partners).toContain('src/core/types.ts')
+    expect(partners).toContain('src/utils/format.ts')
+  })
+
+  it('detects hidden dependencies in edit context', async () => {
+    const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
+    const temporal: TemporalData = JSON.parse(content!)
+
+    const file = 'processor.ts'
+    const hidden = temporal.coupling
+      .filter(c => c.fileA.includes(file) || c.fileB.includes(file))
+      .filter(c => !c.hasImport)
+
+    expect(hidden.length).toBe(1)
+    expect(hidden[0]!.warning).toContain('HIDDEN DEPENDENCY')
+  })
+
+  it('finds importers of a file from graph', async () => {
+    const graph = await readGraph(fixture.root)
+    expect(graph).not.toBeNull()
+
+    const importers = getFileImporters(graph!, 'types.ts')
+    expect(importers.length).toBe(2) // processor.ts and format.ts import types.ts
+  })
+
+  it('includes bug history for files with fix commits', async () => {
+    const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
+    const temporal: TemporalData = JSON.parse(content!)
+
+    const bugs = temporal.bugHistory.find(b => b.file.includes('processor.ts'))
+    expect(bugs).toBeDefined()
+    expect(bugs!.fixCommits).toBe(3)
+    expect(bugs!.lessons).toContain('Race condition in async processing')
+  })
+
+  it('returns empty warnings for stable files', async () => {
+    const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
+    const temporal: TemporalData = JSON.parse(content!)
+
+    const file = 'config.ts'
+    const couplings = temporal.coupling
+      .filter(c => c.fileA.includes(file) || c.fileB.includes(file))
+
+    expect(couplings).toHaveLength(0)
+
+    const hotspot = temporal.hotspots.find(h => h.file.includes(file))
+    expect(hotspot).toBeUndefined()
   })
 })

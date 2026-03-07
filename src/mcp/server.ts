@@ -2,7 +2,7 @@
  * CodeCortex MCP Server
  *
  * Serves codebase knowledge to AI agents via Model Context Protocol.
- * 14 tools: 9 read (knowledge retrieval) + 5 write (knowledge creation).
+ * 15 tools: 10 read (knowledge retrieval) + 5 write (knowledge creation).
  *
  * Usage:
  *   codecortex serve
@@ -27,7 +27,7 @@ import { registerWriteTools } from './tools/write.js'
 export function createServer(projectRoot: string): McpServer {
   const server = new McpServer({
     name: 'codecortex',
-    version: '0.4.3',
+    version: '0.4.4',
     description: 'Persistent codebase knowledge layer. Pre-digested architecture, symbols, coupling, and patterns served to AI agents.',
   })
 

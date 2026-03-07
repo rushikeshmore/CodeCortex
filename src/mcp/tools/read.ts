@@ -2,18 +2,40 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { readFile, cortexPath } from '../../utils/files.js'
 import { readManifest } from '../../core/manifest.js'
-import { readGraph, getModuleDependencies, getMostImportedFiles } from '../../core/graph.js'
+import { readGraph, getModuleDependencies, getMostImportedFiles, getFileImporters } from '../../core/graph.js'
 import { readModuleDoc, listModuleDocs } from '../../core/modules.js'
 import { listSessions, readSession, getLatestSession } from '../../core/sessions.js'
 import { listDecisions, readDecision } from '../../core/decisions.js'
 import { searchKnowledge } from '../../core/search.js'
-import type { TemporalData, SymbolIndex } from '../../types/index.js'
+import { computeFreshness } from '../../core/freshness.js'
+import type { TemporalData, SymbolIndex, FreshnessInfo } from '../../types/index.js'
 
 function textResult(data: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] }
 }
 
+/** Attach freshness metadata to any response object. */
+function withFreshness<T extends object>(data: T, freshness: FreshnessInfo | null): T & { _freshness?: FreshnessInfo } {
+  if (!freshness) return data
+  return { ...data, _freshness: freshness }
+}
+
 export function registerReadTools(server: McpServer, projectRoot: string): void {
+  // Cache freshness per MCP session to avoid repeated git calls.
+  // Invalidated when null (first call) or after 60 seconds.
+  let cachedFreshness: { info: FreshnessInfo | null; timestamp: number } | null = null
+  const FRESHNESS_TTL_MS = 60_000
+
+  async function getFreshness(): Promise<FreshnessInfo | null> {
+    const now = Date.now()
+    if (cachedFreshness && (now - cachedFreshness.timestamp) < FRESHNESS_TTL_MS) {
+      return cachedFreshness.info
+    }
+    const info = await computeFreshness(projectRoot)
+    cachedFreshness = { info, timestamp: now }
+    return info
+  }
+
   // --- Tool 1: get_project_overview ---
   server.registerTool(
     'get_project_overview',
@@ -37,12 +59,14 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         }
       }
 
-      return textResult({
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({
         constitution,
         overview,
         manifest,
         graphSummary,
-      })
+      }, freshness))
     }
   )
 
@@ -69,7 +93,9 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         deps = getModuleDependencies(graph, name)
       }
 
-      return textResult({ found: true, name, doc, dependencies: deps })
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({ found: true, name, doc, dependencies: deps }, freshness))
     }
   )
 
@@ -88,13 +114,14 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
 
       const session = await readSession(projectRoot, latestId)
       const allSessions = await listSessions(projectRoot)
+      const freshness = await getFreshness()
 
-      return textResult({
+      return textResult(withFreshness({
         hasSession: true,
         latest: session,
         totalSessions: allSessions.length,
         recentSessionIds: allSessions.slice(0, 5),
-      })
+      }, freshness))
     }
   )
 
@@ -109,11 +136,13 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
     },
     async ({ query }) => {
       const results = await searchKnowledge(projectRoot, query)
-      return textResult({
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({
         query,
         totalResults: results.length,
         results: results.slice(0, 20),
-      })
+      }, freshness))
     }
   )
 
@@ -139,11 +168,13 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         }
       }
 
-      return textResult({
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({
         total: decisions.length,
         topic: topic || 'all',
         decisions,
-      })
+      }, freshness))
     }
   )
 
@@ -161,18 +192,20 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
       const graph = await readGraph(projectRoot)
       if (!graph) return textResult({ found: false, message: 'No graph data. Run codecortex init first.' })
 
+      const freshness = await getFreshness()
+
       if (module) {
         const deps = getModuleDependencies(graph, module)
-        return textResult({ module, ...deps })
+        return textResult(withFreshness({ module, ...deps }, freshness))
       }
 
       if (file) {
         const imports = graph.imports.filter(e => e.source.includes(file) || e.target.includes(file))
         const calls = graph.calls.filter(e => e.file.includes(file))
-        return textResult({ file, imports, calls })
+        return textResult(withFreshness({ file, imports, calls }, freshness))
       }
 
-      return textResult(graph)
+      return textResult(withFreshness(graph, freshness))
     }
   )
 
@@ -199,11 +232,13 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
       if (kind) matches = matches.filter(s => s.kind === kind)
       if (file) matches = matches.filter(s => s.file.includes(file))
 
-      return textResult({
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({
         query: { name, kind, file },
         totalMatches: matches.length,
         symbols: matches.slice(0, 30),
-      })
+      }, freshness))
     }
   )
 
@@ -230,14 +265,16 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         )
       }
 
-      return textResult({
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({
         file: file || 'all',
         minStrength,
         couplings: coupling,
         warning: coupling.filter(c => !c.hasImport).length > 0
           ? 'HIDDEN DEPENDENCIES FOUND — some coupled files have NO import between them'
           : null,
-      })
+      }, freshness))
     }
   )
 
@@ -284,11 +321,133 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         .slice(0, limit)
         .map(([file, data]) => ({ file, ...data, risk: Math.round(data.risk * 100) / 100 }))
 
-      return textResult({
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({
         period: `${temporal.periodDays} days`,
         totalCommits: temporal.totalCommits,
         hotspots: ranked,
-      })
+      }, freshness))
     }
   )
+
+  // --- Tool 10: get_edit_briefing ---
+  server.registerTool(
+    'get_edit_briefing',
+    {
+      description: 'CALL THIS BEFORE EDITING FILES. Takes a list of files you plan to edit and returns everything you need to know: co-change warnings (files you must also update), risk assessment, who imports these files, relevant patterns, and recent change history. Prevents bugs from hidden dependencies.',
+      inputSchema: {
+        files: z.array(z.string()).min(1).describe('File paths you plan to edit (relative to project root)'),
+      },
+    },
+    async ({ files }) => {
+      const temporalContent = await readFile(cortexPath(projectRoot, 'temporal.json'))
+      if (!temporalContent) return textResult({ found: false, message: 'No temporal data. Run codecortex init first.' })
+
+      const temporal: TemporalData = JSON.parse(temporalContent)
+      const graph = await readGraph(projectRoot)
+      const patternsContent = await readFile(cortexPath(projectRoot, 'patterns.md'))
+
+      const briefings = files.map(file => {
+        // 1. Co-change warnings
+        const couplings = temporal.coupling
+          .filter(c => c.fileA.includes(file) || c.fileB.includes(file))
+          .map(c => {
+            const other = c.fileA.includes(file) ? c.fileB : c.fileA
+            return {
+              file: other,
+              cochanges: c.cochanges,
+              strength: c.strength,
+              hasImport: c.hasImport,
+              warning: c.warning || null,
+            }
+          })
+          .sort((a, b) => b.strength - a.strength)
+
+        // 2. Risk assessment
+        const hotspot = temporal.hotspots.find(h => h.file.includes(file))
+        const bugs = temporal.bugHistory.find(b => b.file.includes(file))
+        const couplingCount = couplings.length
+        const hiddenDeps = couplings.filter(c => !c.hasImport).length
+
+        let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = 'LOW'
+        const riskScore = (hotspot?.changes || 0) + (couplingCount * 2) + ((bugs?.fixCommits || 0) * 3) + (hiddenDeps * 4)
+
+        if (riskScore >= 20) riskLevel = 'CRITICAL'
+        else if (riskScore >= 12) riskLevel = 'HIGH'
+        else if (riskScore >= 6) riskLevel = 'MEDIUM'
+
+        // 3. Who imports this file
+        let importedBy: string[] = []
+        if (graph) {
+          importedBy = getFileImporters(graph, file)
+        }
+
+        // 4. Recent changes
+        const recentChange = hotspot ? {
+          lastChanged: hotspot.lastChanged,
+          daysSinceChange: hotspot.daysSinceChange,
+          totalChanges: hotspot.changes,
+          stability: hotspot.stability,
+        } : null
+
+        // 5. Bug history
+        const bugHistory = bugs ? {
+          fixCommits: bugs.fixCommits,
+          lessons: bugs.lessons,
+        } : null
+
+        return {
+          file,
+          risk: {
+            level: riskLevel,
+            score: Math.round(riskScore * 100) / 100,
+            reason: buildRiskReason(riskLevel, hotspot, couplingCount, hiddenDeps, bugs),
+          },
+          cochangeWarnings: couplings,
+          importedBy,
+          recentChange,
+          bugHistory,
+        }
+      })
+
+      // Files you should also consider editing (coupled but not in the input list)
+      const inputSet = new Set(files)
+      const alsoConsider = new Set<string>()
+      for (const b of briefings) {
+        for (const c of b.cochangeWarnings) {
+          // Check if coupled file is NOT in the files being edited
+          const coupledFile = c.file
+          const isInInput = files.some(f => coupledFile.includes(f) || f.includes(coupledFile))
+          if (!isInInput && c.strength >= 0.5) {
+            alsoConsider.add(`${coupledFile} (${Math.round(c.strength * 100)}% co-change with ${b.file}${c.hasImport ? '' : ', NO import — hidden dep'})`)
+          }
+        }
+      }
+
+      const freshness = await getFreshness()
+
+      return textResult(withFreshness({
+        briefings,
+        alsoConsiderEditing: [...alsoConsider],
+        patterns: patternsContent || null,
+      }, freshness))
+    }
+  )
+}
+
+function buildRiskReason(
+  level: string,
+  hotspot: { changes: number; stability: string } | undefined,
+  couplings: number,
+  hiddenDeps: number,
+  bugs: { fixCommits: number } | undefined,
+): string {
+  if (level === 'LOW') return 'Low change frequency, few couplings.'
+  const parts: string[] = []
+  if (hotspot && hotspot.changes >= 5) parts.push(`${hotspot.changes} changes (${hotspot.stability})`)
+  if (couplings > 0) parts.push(`${couplings} coupled file${couplings === 1 ? '' : 's'}`)
+  if (hiddenDeps > 0) parts.push(`${hiddenDeps} hidden dep${hiddenDeps === 1 ? '' : 's'}`)
+  if (bugs && bugs.fixCommits > 0) parts.push(`${bugs.fixCommits} bug-fix commit${bugs.fixCommits === 1 ? '' : 's'}`)
+  return parts.join(', ') + '.'
 }
