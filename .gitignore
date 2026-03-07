@@ -4,7 +4,6 @@ dist/
 .env.local
 *.tgz
 .DS_Store
-.codecortex/
 tests/repos/
 tsconfig.tsbuildinfo
 site/
