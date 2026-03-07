@@ -10,9 +10,17 @@ import { symbolsCommand } from './commands/symbols.js'
 import { searchCommand } from './commands/search.js'
 import { modulesCommand } from './commands/modules.js'
 import { hotspotsCommand } from './commands/hotspots.js'
+import { hookInstallCommand, hookUninstallCommand, hookStatusCommand } from './commands/hook.js'
+import { upgradeCommand } from './commands/upgrade.js'
+import { checkForUpdate, shouldNotify, renderUpdateNotification } from './utils/version-check.js'
 
 const require = createRequire(import.meta.url)
 const { version } = require('../../package.json') as { version: string }
+
+// Fire update check early (non-blocking) — result used at process exit
+const updateCheckPromise = shouldNotify()
+  ? checkForUpdate(version).catch(() => null)
+  : Promise.resolve(null)
 
 const program = new Command()
 
@@ -77,4 +85,37 @@ program
   .option('-l, --limit <number>', 'Number of files to show', '15')
   .action(hotspotsCommand)
 
-program.parse()
+const hook = program.command('hook').description('Manage git hooks for auto-updating knowledge')
+hook.command('install')
+  .description('Install post-commit and post-merge hooks')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action(hookInstallCommand)
+hook.command('uninstall')
+  .description('Remove CodeCortex hooks (preserves other hooks)')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action(hookUninstallCommand)
+hook.command('status')
+  .description('Show hook installation state and knowledge freshness')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action(hookStatusCommand)
+
+program
+  .command('upgrade')
+  .description('Check for and install the latest version of CodeCortex')
+  .action(() => upgradeCommand(version))
+
+// Wrap parse so we can show update notification after the command completes
+async function main(): Promise<void> {
+  await program.parseAsync()
+
+  // Show update notification after command output (skip for serve and upgrade)
+  const commandName = program.args[0]
+  if (commandName !== 'serve' && commandName !== 'upgrade') {
+    const result = await updateCheckPromise
+    if (result?.isOutdated) {
+      renderUpdateNotification(result.current, result.latest)
+    }
+  }
+}
+
+main().catch(() => {})
