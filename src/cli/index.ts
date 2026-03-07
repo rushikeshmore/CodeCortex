@@ -11,9 +11,16 @@ import { searchCommand } from './commands/search.js'
 import { modulesCommand } from './commands/modules.js'
 import { hotspotsCommand } from './commands/hotspots.js'
 import { hookInstallCommand, hookUninstallCommand, hookStatusCommand } from './commands/hook.js'
+import { upgradeCommand } from './commands/upgrade.js'
+import { checkForUpdate, shouldNotify, renderUpdateNotification } from './utils/version-check.js'
 
 const require = createRequire(import.meta.url)
 const { version } = require('../../package.json') as { version: string }
+
+// Fire update check early (non-blocking) — result used at process exit
+const updateCheckPromise = shouldNotify()
+  ? checkForUpdate(version).catch(() => null)
+  : Promise.resolve(null)
 
 const program = new Command()
 
@@ -92,4 +99,23 @@ hook.command('status')
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .action(hookStatusCommand)
 
-program.parse()
+program
+  .command('upgrade')
+  .description('Check for and install the latest version of CodeCortex')
+  .action(() => upgradeCommand(version))
+
+// Wrap parse so we can show update notification after the command completes
+async function main(): Promise<void> {
+  await program.parseAsync()
+
+  // Show update notification after command output (skip for serve and upgrade)
+  const commandName = program.args[0]
+  if (commandName !== 'serve' && commandName !== 'upgrade') {
+    const result = await updateCheckPromise
+    if (result?.isOutdated) {
+      renderUpdateNotification(result.current, result.latest)
+    }
+  }
+}
+
+main().catch(() => {})
