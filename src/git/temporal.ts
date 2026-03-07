@@ -110,19 +110,13 @@ export function getChangeCoupling(commits: CommitInfo[]): ChangeCoupling[] {
     const maxChanges = Math.max(fileCounts.get(fileA) || 0, fileCounts.get(fileB) || 0)
     const strength = maxChanges > 0 ? cochanges / maxChanges : 0
 
-    const coupling: ChangeCoupling = {
+    results.push({
       fileA,
       fileB,
       cochanges,
       strength: Math.round(strength * 100) / 100,
       hasImport: false, // Will be enriched by graph analysis
-    }
-
-    if (strength >= 0.7 && !coupling.hasImport) {
-      coupling.warning = `HIDDEN DEPENDENCY — ${Math.round(strength * 100)}% co-change rate`
-    }
-
-    results.push(coupling)
+    })
   }
 
   // Sort by co-change frequency (descending)

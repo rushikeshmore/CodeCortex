@@ -1,4 +1,4 @@
-import type { DependencyGraph, ImportEdge, CallEdge, ModuleNode } from '../types/index.js'
+import type { DependencyGraph, ImportEdge, CallEdge, ModuleNode, ChangeCoupling } from '../types/index.js'
 import { readFile, writeFile, ensureDir, cortexPath } from '../utils/files.js'
 import { createWriteStream } from 'node:fs'
 import { dirname } from 'node:path'
@@ -104,7 +104,7 @@ export function getMostImportedFiles(graph: DependencyGraph, limit: number = 10)
 
 export function enrichCouplingWithImports(
   graph: DependencyGraph,
-  coupling: { fileA: string; fileB: string; hasImport: boolean }[]
+  coupling: ChangeCoupling[]
 ): void {
   const importPairs = new Set<string>()
   for (const edge of graph.imports) {
@@ -114,5 +114,8 @@ export function enrichCouplingWithImports(
   for (const pair of coupling) {
     const key = [pair.fileA, pair.fileB].sort().join('|')
     pair.hasImport = importPairs.has(key)
+    if (pair.strength >= 0.7 && !pair.hasImport) {
+      pair.warning = `HIDDEN DEPENDENCY — ${Math.round(pair.strength * 100)}% co-change rate`
+    }
   }
 }
