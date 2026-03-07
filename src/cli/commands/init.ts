@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { discoverProject } from '../../core/discovery.js'
+import { discoverProject, buildModuleNodes } from '../../core/discovery.js'
 import { createManifest, writeManifest } from '../../core/manifest.js'
 import { buildGraph, writeGraph } from '../../core/graph.js'
 import { generateConstitution } from '../../core/constitution.js'
@@ -13,7 +13,7 @@ import { extractCalls } from '../../extraction/calls.js'
 import { writeFile, writeJsonStream, ensureDir, cortexPath } from '../../utils/files.js'
 import { readFile } from 'node:fs/promises'
 import { generateStructuralModuleDocs } from '../../core/module-gen.js'
-import type { SymbolRecord, ImportEdge, CallEdge, ModuleNode, SymbolIndex, ProjectInfo } from '../../types/index.js'
+import type { SymbolRecord, ImportEdge, CallEdge, SymbolIndex, ProjectInfo } from '../../types/index.js'
 
 export async function initCommand(opts: { root: string; days: string }): Promise<void> {
   const root = resolve(opts.root)
@@ -76,24 +76,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
 
   // Step 3: Build dependency graph
   console.log('Step 3/6: Building dependency graph...')
-  const MODULE_ROOTS = new Set(['src', 'lib', 'pkg', 'packages', 'apps', 'extensions', 'crates', 'internal', 'cmd', 'scripts', 'tools', 'rust'])
-  const moduleNodes: ModuleNode[] = project.modules.map(modName => {
-    const modFiles = project.files.filter(f => {
-      const parts = f.path.split('/')
-      const topDir = parts[0] ?? ''
-      return (MODULE_ROOTS.has(topDir) && parts[1] === modName) ||
-             (parts[0] === modName)
-    })
-    const topDir = modFiles[0]?.path.split('/')[0] ?? 'src'
-    return {
-      path: `${topDir}/${modName}`,
-      name: modName,
-      files: modFiles.map(f => f.path),
-      language: modFiles[0]?.language || 'unknown',
-      lines: modFiles.reduce((sum, f) => sum + f.lines, 0),
-      symbols: allSymbols.filter(s => modFiles.some(f => f.path === s.file)).length,
-    }
-  })
+  const moduleNodes = buildModuleNodes(project.modules, project.files, allSymbols)
 
   // Detect external dependencies
   const externalDeps: Record<string, string[]> = {}

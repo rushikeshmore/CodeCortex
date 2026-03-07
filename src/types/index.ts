@@ -170,6 +170,10 @@ export interface ProjectInfo {
   languages: string[]
 }
 
+// ─── Freshness ───
+
+export type { FreshnessStatus, FreshnessInfo } from '../core/freshness.js'
+
 // ─── Feedback ───
 
 export interface FeedbackEntry {

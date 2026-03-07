@@ -1,8 +1,8 @@
 import { execSync } from 'node:child_process'
 import { readFile as fsRead, stat } from 'node:fs/promises'
 import { join, relative, dirname, basename, extname } from 'node:path'
-import { existsSync } from 'node:fs'
-import type { DiscoveredFile, ProjectInfo } from '../types/index.js'
+import { existsSync, readFileSync as readFileSyncFs } from 'node:fs'
+import type { DiscoveredFile, ProjectInfo, ModuleNode, SymbolRecord } from '../types/index.js'
 import { EXTENSION_MAP } from '../extraction/parser.js'
 
 const IGNORED_DIRS = new Set([
@@ -32,7 +32,7 @@ function detectProjectName(root: string): string {
   const pkgPath = join(root, 'package.json')
   if (existsSync(pkgPath)) {
     try {
-      const pkg = JSON.parse(execSync(`cat "${pkgPath}"`, { encoding: 'utf-8' }))
+      const pkg = JSON.parse(readFileSyncFs(pkgPath, 'utf-8'))
       if (pkg.name) return pkg.name
     } catch { /* ignore */ }
   }
@@ -41,7 +41,7 @@ function detectProjectName(root: string): string {
   const cargoPath = join(root, 'Cargo.toml')
   if (existsSync(cargoPath)) {
     try {
-      const cargo = execSync(`cat "${cargoPath}"`, { encoding: 'utf-8' })
+      const cargo = readFileSyncFs(cargoPath, 'utf-8')
       const match = cargo.match(/name\s*=\s*"(.+?)"/)
       if (match?.[1]) return match[1]
     } catch { /* ignore */ }
@@ -128,9 +128,10 @@ async function walkDirectory(root: string, baseRoot: string): Promise<string[]> 
   return paths
 }
 
+/** Directories that contain modules (src/cli, lib/utils, etc.) */
+export const MODULE_ROOTS = new Set(['src', 'lib', 'pkg', 'packages', 'apps', 'extensions', 'crates', 'internal', 'cmd', 'scripts', 'tools', 'rust'])
+
 function detectModules(root: string, files: DiscoveredFile[]): string[] {
-  // Detect top-level directories under src/ (or equivalent)
-  const MODULE_ROOTS = new Set(['src', 'lib', 'pkg', 'packages', 'apps', 'extensions', 'crates', 'internal', 'cmd', 'scripts', 'tools', 'rust'])
   const srcDirs = new Set<string>()
 
   for (const file of files) {
@@ -149,6 +150,30 @@ function detectModules(root: string, files: DiscoveredFile[]): string[] {
   return [...srcDirs].sort()
 }
 
+export function buildModuleNodes(
+  modules: string[],
+  files: DiscoveredFile[],
+  symbols: SymbolRecord[],
+): ModuleNode[] {
+  return modules.map(modName => {
+    const modFiles = files.filter(f => {
+      const parts = f.path.split('/')
+      const topDir = parts[0] ?? ''
+      return (MODULE_ROOTS.has(topDir) && parts[1] === modName) ||
+             (parts[0] === modName)
+    })
+    const topDir = modFiles[0]?.path.split('/')[0] ?? 'src'
+    return {
+      path: `${topDir}/${modName}`,
+      name: modName,
+      files: modFiles.map(f => f.path),
+      language: modFiles[0]?.language || 'unknown',
+      lines: modFiles.reduce((sum, f) => sum + f.lines, 0),
+      symbols: symbols.filter(s => modFiles.some(f => f.path === s.file)).length,
+    }
+  })
+}
+
 function detectEntryPoints(root: string, files: DiscoveredFile[], type: ProjectInfo['type']): string[] {
   const entryPoints: string[] = []
 
@@ -157,7 +182,7 @@ function detectEntryPoints(root: string, files: DiscoveredFile[], type: ProjectI
     const pkgPath = join(root, 'package.json')
     if (existsSync(pkgPath)) {
       try {
-        const pkg = JSON.parse(execSync(`cat "${pkgPath}"`, { encoding: 'utf-8' }))
+        const pkg = JSON.parse(readFileSyncFs(pkgPath, 'utf-8'))
         if (pkg.main) entryPoints.push(pkg.main)
         if (pkg.bin) {
           const bins = typeof pkg.bin === 'string' ? [pkg.bin] : Object.values(pkg.bin)

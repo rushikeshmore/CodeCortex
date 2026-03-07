@@ -1,0 +1,718 @@
+{
+  "generated": "2026-03-07T20:43:20.644Z",
+  "periodDays": 90,
+  "totalCommits": 37,
+  "hotspots": [
+    {
+      "file": "README.md",
+      "changes": 12,
+      "stability": "volatile",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/mcp/server.ts",
+      "changes": 10,
+      "stability": "volatile",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "CLAUDE.md",
+      "changes": 7,
+      "stability": "stabilizing",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "tests/extraction/parser.test.ts",
+      "changes": 6,
+      "stability": "stabilizing",
+      "lastChanged": "2026-03-07T18:14:04+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/extraction/parser.ts",
+      "changes": 5,
+      "stability": "stabilizing",
+      "lastChanged": "2026-03-07T18:00:19+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/cli/index.ts",
+      "changes": 5,
+      "stability": "stabilizing",
+      "lastChanged": "2026-03-07T17:45:02+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/cli/commands/init.ts",
+      "changes": 5,
+      "stability": "stabilizing",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "src/cli/commands/update.ts",
+      "changes": 5,
+      "stability": "stabilizing",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "src/extraction/symbols.ts",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-03-02T23:50:46+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/mcp/tools/read.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-07T18:16:39+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".gitignore",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "src/utils/files.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-02T23:31:18+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/extraction/calls.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-02T18:25:55+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/extraction/imports.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-02T18:25:55+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tsup.config.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-02T18:25:55+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/discovery.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-02T13:22:57+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/git/temporal.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-02T13:22:57+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/types/index.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "tests/mcp/read-tools.test.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "tests/extraction/symbols.test.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:50:46+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/constitution.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T18:25:55+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/graph.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T18:25:55+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/cli/commands/serve.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/cli/commands/status.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/decisions.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/search.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/sessions.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/git/diff.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/git/history.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/mcp/tools/write.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tsconfig.json",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:37:08+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/freshness.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "tests/core/freshness.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-08T01:25:37+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/cli/grouped-help.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-07T17:45:02+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/cli/commands/upgrade.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-07T17:22:46+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/cli/utils/version-check.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-07T17:22:46+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "tests/cli/version-check.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-07T17:22:46+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/cli/commands/hook.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-06T14:43:16+05:30",
+      "daysSinceChange": 1
+    },
+    {
+      "file": "tests/cli/hook.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-06T14:43:16+05:30",
+      "daysSinceChange": 1
+    },
+    {
+      "file": "src/cli/commands/hotspots.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "src/cli/commands/modules.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "src/cli/commands/search.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "src/cli/commands/symbols.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "src/core/module-gen.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-04T20:12:01+05:30",
+      "daysSinceChange": 3
+    },
+    {
+      "file": "tests/core/decisions.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/core/graph.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/core/search.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/core/sessions.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/extraction/calls.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/extraction/imports.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/fixtures/setup.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/mcp/server.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/mcp/simulation.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "tests/mcp/write-tools.test.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "vitest.config.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T23:29:40+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/manifest.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:29:16+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/modules.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:29:16+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/core/patterns.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:29:16+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/types/schema.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:29:16+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/utils/markdown.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:29:16+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "src/utils/yaml.ts",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-03-02T03:29:16+05:30",
+      "daysSinceChange": 5
+    },
+    {
+      "file": "LICENSE",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-02-25T17:41:08+05:30",
+      "daysSinceChange": 10
+    }
+  ],
+  "coupling": [
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/cli/commands/update.ts",
+      "cochanges": 5,
+      "strength": 1,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 100% co-change rate"
+    },
+    {
+      "fileA": ".gitignore",
+      "fileB": "src/cli/commands/init.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": ".gitignore",
+      "fileB": "src/cli/commands/update.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/extraction/calls.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/extraction/imports.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/extraction/parser.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/extraction/symbols.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "tsup.config.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/extraction/calls.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/extraction/imports.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/extraction/parser.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/extraction/symbols.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "tsup.config.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/extraction/calls.ts",
+      "fileB": "src/extraction/imports.ts",
+      "cochanges": 3,
+      "strength": 1,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 100% co-change rate"
+    },
+    {
+      "fileA": "src/extraction/calls.ts",
+      "fileB": "src/extraction/parser.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/extraction/calls.ts",
+      "fileB": "src/extraction/symbols.ts",
+      "cochanges": 3,
+      "strength": 0.75,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 75% co-change rate"
+    },
+    {
+      "fileA": "src/extraction/calls.ts",
+      "fileB": "tsup.config.ts",
+      "cochanges": 3,
+      "strength": 1,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 100% co-change rate"
+    },
+    {
+      "fileA": "src/extraction/imports.ts",
+      "fileB": "src/extraction/parser.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/extraction/imports.ts",
+      "fileB": "src/extraction/symbols.ts",
+      "cochanges": 3,
+      "strength": 0.75,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 75% co-change rate"
+    },
+    {
+      "fileA": "src/extraction/imports.ts",
+      "fileB": "tsup.config.ts",
+      "cochanges": 3,
+      "strength": 1,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 100% co-change rate"
+    },
+    {
+      "fileA": "src/extraction/parser.ts",
+      "fileB": "src/extraction/symbols.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/extraction/parser.ts",
+      "fileB": "tsup.config.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/extraction/symbols.ts",
+      "fileB": "tsup.config.ts",
+      "cochanges": 3,
+      "strength": 0.75,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 75% co-change rate"
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/core/discovery.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/git/temporal.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/core/discovery.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/git/temporal.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/core/discovery.ts",
+      "fileB": "src/git/temporal.ts",
+      "cochanges": 3,
+      "strength": 1,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 100% co-change rate"
+    }
+  ],
+  "bugHistory": [
+    {
+      "file": "README.md",
+      "fixCommits": 3,
+      "lessons": [
+        "v0.4.3 — Node 20-22 engine restriction, fix broken README link",
+        "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)",
+        "Go type extraction, docs cleanup, npm publish as codecortex-ai"
+      ]
+    },
+    {
+      "file": "src/mcp/server.ts",
+      "fixCommits": 3,
+      "lessons": [
+        "v0.4.3 — Node 20-22 engine restriction, fix broken README link",
+        "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)",
+        "align version and language count across all surfaces"
+      ]
+    },
+    {
+      "file": "CLAUDE.md",
+      "fixCommits": 3,
+      "lessons": [
+        "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)",
+        "align version and language count across all surfaces",
+        "Go type extraction, docs cleanup, npm publish as codecortex-ai"
+      ]
+    },
+    {
+      "file": "src/extraction/parser.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)"
+      ]
+    },
+    {
+      "file": "tests/extraction/parser.test.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)"
+      ]
+    },
+    {
+      "file": "src/extraction/symbols.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "Go type extraction, docs cleanup, npm publish as codecortex-ai"
+      ]
+    },
+    {
+      "file": "tests/extraction/symbols.test.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "Go type extraction, docs cleanup, npm publish as codecortex-ai"
+      ]
+    },
+    {
+      "file": "src/utils/files.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "resolve TypeScript strict errors in writeJsonStream signature"
+      ]
+    }
+  ]
+}

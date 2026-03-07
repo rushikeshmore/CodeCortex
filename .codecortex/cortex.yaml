@@ -1,0 +1,24 @@
+version: 1.0.0
+project: codecortex-ai
+root: /Users/rushikeshmore/Desktop/@/personal-desk/03-projects/CodeCortex
+generated: 2026-03-07T12:52:20.783Z
+lastUpdated: 2026-03-07T20:43:20.651Z
+languages:
+  - typescript
+totalFiles: 57
+totalSymbols: 1313
+totalModules: 7
+tiers:
+  hot:
+    - cortex.yaml
+    - constitution.md
+    - overview.md
+    - graph.json
+    - symbols.json
+    - temporal.json
+  warm:
+    - modules/
+  cold:
+    - decisions/
+    - sessions/
+    - patterns.md
