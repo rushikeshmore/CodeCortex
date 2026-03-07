@@ -81,6 +81,27 @@ describe('supportedLanguages', () => {
   })
 })
 
+describe('grammar loader smoke test', () => {
+  const langs = supportedLanguages()
+
+  it.each(langs)('%s grammar loads without error', (lang) => {
+    // This catches: missing npm packages, broken native builds,
+    // incorrect require() paths (e.g. .typescript, .php, .ocaml sub-exports)
+    // NODE_MODULE_VERSION mismatches (stale rebuild after Node upgrade) are
+    // skipped locally — they're caught by CI's fresh install matrix instead.
+    try {
+      parseSource('x', lang)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('NODE_MODULE_VERSION')) {
+        // Stale native build from Node version switch — skip, CI catches this
+        return
+      }
+      throw e
+    }
+  })
+})
+
 describe('initParser', () => {
   it('is a no-op (native bindings need no async init)', async () => {
     await expect(initParser()).resolves.toBeUndefined()

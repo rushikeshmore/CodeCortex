@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [20, 22, 24]
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install --legacy-peer-deps
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npm run build
+
+  install-test:
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      matrix:
+        node-version: [20, 22, 24]
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install --legacy-peer-deps
+      - run: npm pack
+      - name: Install from tarball (simulates npm install -g)
+        run: npm install -g ./codecortex-ai-*.tgz --legacy-peer-deps
+      - name: Verify CLI works
+        run: |
+          codecortex --version
+          codecortex --help
