@@ -27,7 +27,7 @@ import { registerWriteTools } from './tools/write.js'
 export function createServer(projectRoot: string): McpServer {
   const server = new McpServer({
     name: 'codecortex',
-    version: '0.4.2',
+    version: '0.4.3',
     description: 'Persistent codebase knowledge layer. Pre-digested architecture, symbols, coupling, and patterns served to AI agents.',
   })
 

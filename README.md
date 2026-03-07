@@ -16,7 +16,7 @@ Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn yo
 Every AI coding session starts from scratch. When context compacts or a new session begins, the AI re-scans the entire codebase. Same files, same tokens, same wasted time. It's like hiring a new developer every session who has to re-learn everything before writing a single line.
 
 **The data backs this up:**
-- AI agents increase defect risk by 30% on unfamiliar code ([CodeScene + Lund University, 2025](https://codescene.com/hubfs/whitepapers/AI-Coding-Assistants-and-Code-Quality.pdf))
+- AI agents increase defect risk by 30% on unfamiliar code ([CodeScene + Lund University, 2025](https://codescene.com/hubfs/whitepapers/AI-Ready-Code-How-Code-Health-Determines-AI-Performance.pdf))
 - Code churn grew 2.5x in the AI era ([GitClear, 211M lines analyzed](https://www.gitclear.com/coding_on_copilot_data_shows_ais_downward_pressure_on_code_quality))
 - Nobody combines structural + semantic + temporal + decision knowledge in one portable tool
 

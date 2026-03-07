@@ -1,6 +1,6 @@
 {
   "name": "codecortex-ai",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Permanent codebase memory for AI agents — extracts symbols, deps, and patterns, serves via MCP",
   "type": "module",
   "bin": {
