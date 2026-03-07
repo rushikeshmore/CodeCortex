@@ -1,9 +1,9 @@
 # CodeCortex
 
+Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn your codebase every session.
+
 > **⚠️ If you're on v0.3.x or earlier, update now:** `npm install -g codecortex-ai@latest`
 > v0.4.2 fixes broken installs, adds auto-update notifications, git hooks, and grouped CLI help.
-
-> Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn your codebase every session.
 
 [Website](https://codecortex-ai.vercel.app) · [npm](https://www.npmjs.com/package/codecortex-ai) · [GitHub](https://github.com/rushikeshmore/CodeCortex)
 
