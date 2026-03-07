@@ -28,9 +28,11 @@ CodeCortex pre-digests codebases into layered knowledge files and serves them to
 
 ## Quick Start
 
+> **Requires Node 20 or 22.** Node 24 is not yet supported (tree-sitter native bindings need an upstream update).
+
 ```bash
-# Install
-npm install -g codecortex-ai
+# Install (--legacy-peer-deps needed for tree-sitter peer dep mismatches)
+npm install -g codecortex-ai --legacy-peer-deps
 
 # Initialize knowledge for your project
 cd /path/to/your-project
