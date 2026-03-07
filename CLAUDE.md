@@ -71,7 +71,7 @@ Run ALL of these before `npm publish`. Do not skip any step.
 - **Grammar smoke test** (`parser.test.ts`): Loads every language in `LANGUAGE_LOADERS` via `parseSource()`. Catches missing packages, broken native builds, wrong require paths. This is what would have caught the tree-sitter-liquid issue.
 - **Version-check tests**: Update notification, cache lifecycle, PM detection, upgrade commands.
 - **Hook tests**: Git hook install/uninstall/status integration tests.
-- **MCP tests**: All 14 tools (read + write), simulation tests.
+- **MCP tests**: All 15 tools (read + write), simulation tests.
 
 ### Known limitations
 - tree-sitter native bindings don't compile on Node 24 yet (upstream issue)
