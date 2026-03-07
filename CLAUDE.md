@@ -4,7 +4,7 @@ Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into stru
 
 ## Stack
 - TypeScript, ESM (`"type": "module"`)
-- tree-sitter (native N-API) + 28 language grammar packages
+- tree-sitter (native N-API) + 27 language grammar packages
 - @modelcontextprotocol/sdk - MCP server (stdio transport)
 - commander - CLI (init, serve, update, status)
 - simple-git - git integration + temporal analysis

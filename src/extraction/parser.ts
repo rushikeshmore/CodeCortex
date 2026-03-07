@@ -50,7 +50,6 @@ const LANGUAGE_LOADERS: Record<string, LanguageLoader> = {
   elisp:     () => require('tree-sitter-elisp'),
   // Web / Templating
   vue:       () => require('tree-sitter-vue'),
-  liquid:    () => require('tree-sitter-liquid'),
   // Web3 / Other
   solidity:  () => require('tree-sitter-solidity'),
   ql:        () => require('tree-sitter-ql'),
@@ -124,8 +123,6 @@ export const EXTENSION_MAP: Record<string, string> = {
   '.sol': 'solidity',
   // Vue
   '.vue': 'vue',
-  // Liquid
-  '.liquid': 'liquid',
   // CodeQL
   '.ql': 'ql',
 }
