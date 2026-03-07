@@ -53,6 +53,29 @@ Hybrid extraction:
 Read (9): get_project_overview, get_module_context, get_session_briefing, search_knowledge, get_decision_history, get_dependency_graph, lookup_symbol, get_change_coupling, get_hotspots
 Write (5): analyze_module, save_module_analysis, record_decision, update_patterns, report_feedback
 
+## Pre-Publish Checklist
+Run ALL of these before `npm publish`. Do not skip any step.
+1. `npx tsc --noEmit` — must be clean
+2. `npm run build` — must succeed
+3. `npm test` — all tests must pass (grammar smoke test loads every language)
+4. `node dist/cli/index.js --version` — verify version matches package.json
+5. `node dist/cli/index.js --help` — verify grouped help renders correctly
+6. `node dist/cli/index.js hook --help` — verify subcommand help is flat (not grouped)
+7. `npm pack --dry-run` — verify tarball contents (no stale files, no secrets)
+8. Verify version is bumped in BOTH `package.json` AND `src/mcp/server.ts`
+9. If adding/removing a language: update count in README, CLAUDE.md, site/
+
+### What the tests catch
+- **Grammar smoke test** (`parser.test.ts`): Loads every language in `LANGUAGE_LOADERS` via `parseSource()`. Catches missing packages, broken native builds, wrong require paths. This is what would have caught the tree-sitter-liquid issue.
+- **Version-check tests**: Update notification, cache lifecycle, PM detection, upgrade commands.
+- **Hook tests**: Git hook install/uninstall/status integration tests.
+- **MCP tests**: All 14 tools (read + write), simulation tests.
+
+### Known limitations
+- tree-sitter native bindings don't compile on Node 24 yet (upstream issue)
+- Some grammar packages need `--legacy-peer-deps` due to peer dep mismatches with tree-sitter@0.25
+- Grammar smoke test skips NODE_MODULE_VERSION and "Invalid language object" errors (native binding issues, not code bugs)
+
 ## Key Patterns
 - All MCP tool handlers return `{ content: [{ type: 'text', text: JSON.stringify(...) }] }`
 - Use stderr for logging (stdout reserved for JSON-RPC in stdio mode)
