@@ -6,7 +6,7 @@ Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into stru
 - TypeScript, ESM (`"type": "module"`)
 - tree-sitter (native N-API) + 27 language grammar packages
 - @modelcontextprotocol/sdk - MCP server (stdio transport)
-- commander - CLI (init, serve, update, status)
+- commander - CLI (init, serve, update, status, symbols, search, modules, hotspots, hook, upgrade)
 - simple-git - git integration + temporal analysis
 - zod - schema validation for LLM analysis results
 - yaml - cortex.yaml manifest
@@ -54,6 +54,7 @@ Read (10): get_project_overview, get_module_context, get_session_briefing, searc
 Write (5): analyze_module, save_module_analysis, record_decision, update_patterns, report_feedback
 
 All read tools include `_freshness` metadata (status, lastAnalyzed, filesChangedSince, changedFiles, message).
+All read tools return context-safe responses (<10K chars) via truncation utilities in `src/utils/truncate.ts`.
 
 ## Pre-Publish Checklist
 Run ALL of these before `npm publish`. Do not skip any step.
@@ -90,11 +91,11 @@ Run ALL of these before `npm publish`. Do not skip any step.
 src/
   cli/           - commander CLI (init, serve, update, status)
   mcp/           - MCP server + tools
-  core/          - knowledge store (graph, modules, decisions, sessions, patterns, constitution, search)
+  core/          - knowledge store (graph, modules, decisions, sessions, patterns, constitution, search, agent-instructions, freshness)
   extraction/    - tree-sitter native N-API (parser, symbols, imports, calls)
   git/           - git diff, history, temporal analysis
   types/         - TypeScript types + Zod schemas
-  utils/         - file I/O, YAML, markdown helpers
+  utils/         - file I/O, YAML, markdown helpers, truncation
 ```
 
 ## Temporal Analysis

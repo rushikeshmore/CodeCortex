@@ -1,13 +1,15 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { readFile, cortexPath } from '../../utils/files.js'
-import { readManifest } from '../../core/manifest.js'
 import { readGraph, getModuleDependencies, getMostImportedFiles, getFileImporters } from '../../core/graph.js'
 import { readModuleDoc, listModuleDocs } from '../../core/modules.js'
 import { listSessions, readSession, getLatestSession } from '../../core/sessions.js'
 import { listDecisions, readDecision } from '../../core/decisions.js'
 import { searchKnowledge } from '../../core/search.js'
 import { computeFreshness } from '../../core/freshness.js'
+import { capString, truncateArray } from '../../utils/truncate.js'
+import { readManifest } from '../../core/manifest.js'
+import { getSizeLimits, type SizeLimits, type DetailLevel } from '../../core/project-size.js'
 import type { TemporalData, SymbolIndex, FreshnessInfo } from '../../types/index.js'
 
 function textResult(data: unknown) {
@@ -22,7 +24,6 @@ function withFreshness<T extends object>(data: T, freshness: FreshnessInfo | nul
 
 export function registerReadTools(server: McpServer, projectRoot: string): void {
   // Cache freshness per MCP session to avoid repeated git calls.
-  // Invalidated when null (first call) or after 60 seconds.
   let cachedFreshness: { info: FreshnessInfo | null; timestamp: number } | null = null
   const FRESHNESS_TTL_MS = 60_000
 
@@ -36,17 +37,29 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
     return info
   }
 
+  // Cache size-based limits per MCP session (project size doesn't change mid-session).
+  let cachedLimits: SizeLimits | null = null
+
+  async function getLimits(detail: DetailLevel = 'brief'): Promise<SizeLimits> {
+    // 'full' always returns hard caps — no caching needed
+    if (detail === 'full') {
+      return getSizeLimits('large', 'full')
+    }
+    if (cachedLimits) return cachedLimits
+    const manifest = await readManifest(projectRoot)
+    cachedLimits = getSizeLimits(manifest?.projectSize ?? 'large')
+    return cachedLimits
+  }
+
   // --- Tool 1: get_project_overview ---
   server.registerTool(
     'get_project_overview',
     {
-      description: 'Get the full project overview: constitution (architecture, risk map, available knowledge), overview narrative, and dependency graph summary. This is the starting point for understanding any codebase. Always call this first.',
+      description: 'Get the project overview: constitution (architecture, risk map, available knowledge) and dependency graph summary. This is the starting point for understanding any codebase. Always call this first.',
       inputSchema: {},
     },
     async () => {
       const constitution = await readFile(cortexPath(projectRoot, 'constitution.md'))
-      const overview = await readFile(cortexPath(projectRoot, 'overview.md'))
-      const manifest = await readManifest(projectRoot)
 
       const graph = await readGraph(projectRoot)
       let graphSummary = null
@@ -63,8 +76,6 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
 
       return textResult(withFreshness({
         constitution,
-        overview,
-        manifest,
         graphSummary,
       }, freshness))
     }
@@ -77,25 +88,61 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
       description: 'Get deep context for a specific module: purpose, data flow, public API, gotchas, dependencies, and temporal signals (churn, coupling, bug history). Use after get_project_overview when you need to work on a specific module.',
       inputSchema: {
         name: z.string().describe('Module name (e.g., "scoring", "api", "indexer")'),
+        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data (use only when you need exhaustive info).'),
       },
     },
-    async ({ name }) => {
+    async ({ name, detail }) => {
+      const limits = await getLimits(detail)
       const doc = await readModuleDoc(projectRoot, name)
       if (!doc) {
         const available = await listModuleDocs(projectRoot)
         return textResult({ found: false, name, available, message: `Module "${name}" not found. Available modules: ${available.join(', ')}` })
       }
 
-      // Get graph info for this module
+      const cappedDoc = capString(doc, limits.moduleDocCap)
+
       const graph = await readGraph(projectRoot)
-      let deps = null
+      let depSummary = null
       if (graph) {
-        deps = getModuleDependencies(graph, name)
+        const deps = getModuleDependencies(graph, name)
+
+        const importsFrom = new Set<string>()
+        const importedBy = new Set<string>()
+        const externalDeps = new Set<string>()
+
+        for (const edge of deps.imports) {
+          const targetMod = graph.modules.find(m => m.files.includes(edge.target))
+          if (targetMod && targetMod.name !== name) importsFrom.add(targetMod.name)
+          if (!edge.target.startsWith('.') && !edge.target.startsWith('/')) {
+            externalDeps.add(edge.target)
+          }
+        }
+        for (const edge of deps.importedBy) {
+          const sourceMod = graph.modules.find(m => m.files.includes(edge.source))
+          if (sourceMod && sourceMod.name !== name) importedBy.add(sourceMod.name)
+        }
+
+        const modFiles = new Set(graph.modules.find(m => m.name === name)?.files ?? [])
+        for (const [pkg, files] of Object.entries(graph.externalDeps)) {
+          if (files.some(f => modFiles.has(f))) externalDeps.add(pkg)
+        }
+
+        const extDepsArr = [...externalDeps]
+        const importsFromArr = [...importsFrom]
+        const importedByArr = [...importedBy]
+        depSummary = {
+          importsFrom: importsFromArr.slice(0, limits.depModuleNameCap),
+          importedBy: importedByArr.slice(0, limits.depModuleNameCap),
+          totalImportsFrom: importsFromArr.length,
+          totalImportedBy: importedByArr.length,
+          externalDeps: extDepsArr.slice(0, limits.depExternalCap),
+          totalExternalDeps: extDepsArr.length,
+        }
       }
 
       const freshness = await getFreshness()
 
-      return textResult(withFreshness({ found: true, name, doc, dependencies: deps }, freshness))
+      return textResult(withFreshness({ found: true, name, doc: cappedDoc, dependencies: depSummary }, freshness))
     }
   )
 
@@ -120,7 +167,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         hasSession: true,
         latest: session,
         totalSessions: allSessions.length,
-        recentSessionIds: allSessions.slice(0, 5),
+        recentSessionIds: allSessions.slice(0, (await getLimits()).sessionsCap),
       }, freshness))
     }
   )
@@ -129,19 +176,23 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
   server.registerTool(
     'search_knowledge',
     {
-      description: 'Search across all CodeCortex knowledge files (modules, decisions, patterns, sessions, constitution) for a keyword or phrase. Returns matching lines with context.',
+      description: 'Search across symbols (functions, classes, types), file paths, and knowledge docs. Returns ranked results: symbol definitions first, then file paths, then doc matches. Use instead of grep for finding code concepts.',
       inputSchema: {
-        query: z.string().describe('Search term or phrase'),
+        query: z.string().describe('Search term or phrase (e.g., "auth", "processData", "gateway")'),
+        limit: z.number().int().min(1).max(50).optional().describe('Max results to return. Defaults to size-adaptive limit.'),
+        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns more results.'),
       },
     },
-    async ({ query }) => {
-      const results = await searchKnowledge(projectRoot, query)
+    async ({ query, limit, detail }) => {
+      const limits = await getLimits(detail)
+      const effectiveLimit = limit ?? limits.searchDefaultLimit
+      const results = await searchKnowledge(projectRoot, query, effectiveLimit)
       const freshness = await getFreshness()
 
       return textResult(withFreshness({
         query,
         totalResults: results.length,
-        results: results.slice(0, 20),
+        results,
       }, freshness))
     }
   )
@@ -153,9 +204,11 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
       description: 'Get architectural decision records. Shows WHY the codebase is built the way it is. Filter by topic keyword.',
       inputSchema: {
         topic: z.string().optional().describe('Optional keyword to filter decisions'),
+        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data.'),
       },
     },
-    async ({ topic }) => {
+    async ({ topic, detail }) => {
+      const limits = await getLimits(detail)
       const ids = await listDecisions(projectRoot)
       const decisions: string[] = []
 
@@ -163,17 +216,19 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         const content = await readDecision(projectRoot, id)
         if (content) {
           if (!topic || content.toLowerCase().includes(topic.toLowerCase())) {
-            decisions.push(content)
+            decisions.push(capString(content, limits.decisionCharCap))
           }
         }
       }
 
+      const capped = truncateArray(decisions, limits.decisionCap, 'decisions')
       const freshness = await getFreshness()
 
       return textResult(withFreshness({
-        total: decisions.length,
+        total: capped.total,
         topic: topic || 'all',
-        decisions,
+        decisions: capped.items,
+        ...(capped.truncated ? { truncated: capped.message } : {}),
       }, freshness))
     }
   )
@@ -182,30 +237,58 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
   server.registerTool(
     'get_dependency_graph',
     {
-      description: 'Get the import/export dependency graph. Shows which files import which, external dependencies, and entry points. Optionally filter to a specific file or module.',
+      description: 'Get the import/export dependency graph. Without filters, returns a summary dashboard. With a file or module filter, returns scoped edges (capped at 50). Use `name` for module filtering.',
       inputSchema: {
         file: z.string().optional().describe('Filter to edges involving this file path'),
-        module: z.string().optional().describe('Filter to edges involving this module name'),
+        name: z.string().optional().describe('Filter to edges involving this module name'),
+        module: z.string().optional().describe('(Deprecated — use `name`) Alias for name'),
+        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data.'),
       },
     },
-    async ({ file, module }) => {
+    async ({ file, name, module, detail }) => {
       const graph = await readGraph(projectRoot)
       if (!graph) return textResult({ found: false, message: 'No graph data. Run codecortex init first.' })
 
       const freshness = await getFreshness()
+      const mod = name || module
 
-      if (module) {
-        const deps = getModuleDependencies(graph, module)
-        return textResult(withFreshness({ module, ...deps }, freshness))
+      const limits = await getLimits(detail)
+
+      if (mod) {
+        const deps = getModuleDependencies(graph, mod)
+        return textResult(withFreshness({
+          module: mod,
+          imports: deps.imports.slice(0, limits.graphEdgeCap),
+          importedBy: deps.importedBy.slice(0, limits.graphEdgeCap),
+          calls: deps.calls.slice(0, limits.graphCallCap),
+          totalImports: deps.imports.length,
+          totalImportedBy: deps.importedBy.length,
+          totalCalls: deps.calls.length,
+        }, freshness))
       }
 
       if (file) {
         const imports = graph.imports.filter(e => e.source.includes(file) || e.target.includes(file))
         const calls = graph.calls.filter(e => e.file.includes(file))
-        return textResult(withFreshness({ file, imports, calls }, freshness))
+        return textResult(withFreshness({
+          file,
+          imports: imports.slice(0, limits.graphFileEdgeCap),
+          calls: calls.slice(0, limits.graphFileEdgeCap),
+          totalImports: imports.length,
+          totalCalls: calls.length,
+        }, freshness))
       }
 
-      return textResult(withFreshness(graph, freshness))
+      // No filter — return summary dashboard (never dump raw graph)
+      return textResult(withFreshness({
+        summary: true,
+        modules: graph.modules.length,
+        imports: graph.imports.length,
+        calls: graph.calls.length,
+        entryPoints: graph.entryPoints,
+        externalDeps: Object.keys(graph.externalDeps),
+        topImported: getMostImportedFiles(graph, 10),
+      }, freshness))
     }
   )
 
@@ -218,9 +301,10 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         name: z.string().describe('Symbol name to search for'),
         kind: z.enum(['function', 'class', 'interface', 'type', 'const', 'enum', 'method', 'property', 'variable']).optional().describe('Filter by symbol kind'),
         file: z.string().optional().describe('Filter by file path (partial match)'),
+        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data.'),
       },
     },
-    async ({ name, kind, file }) => {
+    async ({ name, kind, file, detail }) => {
       const content = await readFile(cortexPath(projectRoot, 'symbols.json'))
       if (!content) return textResult({ found: false, message: 'No symbol index. Run codecortex init first.' })
 
@@ -237,7 +321,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
       return textResult(withFreshness({
         query: { name, kind, file },
         totalMatches: matches.length,
-        symbols: matches.slice(0, 30),
+        symbols: matches.slice(0, (await getLimits(detail)).symbolMatchCap),
       }, freshness))
     }
   )
@@ -250,9 +334,10 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
       inputSchema: {
         file: z.string().optional().describe('Show coupling for this specific file'),
         minStrength: z.number().min(0).max(1).default(0.3).describe('Minimum coupling strength (0-1). Default 0.3.'),
+        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data.'),
       },
     },
-    async ({ file, minStrength }) => {
+    async ({ file, minStrength, detail }) => {
       const content = await readFile(cortexPath(projectRoot, 'temporal.json'))
       if (!content) return textResult({ found: false, message: 'No temporal data. Run codecortex init first.' })
 
@@ -265,12 +350,16 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         )
       }
 
+      const limits = await getLimits(detail)
+      const capped = truncateArray(coupling, limits.couplingCap, 'coupling pairs')
       const freshness = await getFreshness()
 
       return textResult(withFreshness({
         file: file || 'all',
         minStrength,
-        couplings: coupling,
+        total: capped.total,
+        couplings: capped.items,
+        ...(capped.truncated ? { truncated: capped.message } : {}),
         warning: coupling.filter(c => !c.hasImport).length > 0
           ? 'HIDDEN DEPENDENCIES FOUND — some coupled files have NO import between them'
           : null,
@@ -338,12 +427,14 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
       description: 'CALL THIS BEFORE EDITING FILES. Takes a list of files you plan to edit and returns everything you need to know: co-change warnings (files you must also update), risk assessment, who imports these files, relevant patterns, and recent change history. Prevents bugs from hidden dependencies.',
       inputSchema: {
         files: z.array(z.string()).min(1).describe('File paths you plan to edit (relative to project root)'),
+        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data.'),
       },
     },
-    async ({ files }) => {
+    async ({ files, detail }) => {
       const temporalContent = await readFile(cortexPath(projectRoot, 'temporal.json'))
       if (!temporalContent) return textResult({ found: false, message: 'No temporal data. Run codecortex init first.' })
 
+      const limits = await getLimits(detail)
       const temporal: TemporalData = JSON.parse(temporalContent)
       const graph = await readGraph(projectRoot)
       const patternsContent = await readFile(cortexPath(projectRoot, 'patterns.md'))
@@ -377,10 +468,10 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
         else if (riskScore >= 12) riskLevel = 'HIGH'
         else if (riskScore >= 6) riskLevel = 'MEDIUM'
 
-        // 3. Who imports this file
+        // 3. Who imports this file (capped)
         let importedBy: string[] = []
         if (graph) {
-          importedBy = getFileImporters(graph, file)
+          importedBy = getFileImporters(graph, file).slice(0, limits.importersCap)
         }
 
         // 4. Recent changes

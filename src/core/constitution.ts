@@ -3,6 +3,7 @@ import { readFile, writeFile, cortexPath } from '../utils/files.js'
 import { readManifest } from './manifest.js'
 import { listModuleDocs } from './modules.js'
 import { listDecisions } from './decisions.js'
+import { classifyProject, getSizeLimits } from './project-size.js'
 
 export interface ConstitutionData {
   modules?: ModuleNode[]
@@ -41,6 +42,12 @@ export async function generateConstitution(projectRoot: string, data?: Constitut
     }
   }
 
+  // Determine size-based limits for constitution content
+  const size = manifest
+    ? classifyProject(manifest.totalFiles, manifest.totalSymbols, manifest.totalModules)
+    : (graphModules ? classifyProject(graphModules.length * 10, graphModules.reduce((s, m) => s + m.symbols, 0), graphModules.length) : 'medium' as const)
+  const limits = getSizeLimits(size)
+
   const lines: string[] = [
     `# ${manifest?.project || 'Project'} — Constitution`,
     '',
@@ -70,9 +77,15 @@ export async function generateConstitution(projectRoot: string, data?: Constitut
       lines.push(`**Entry points:** ${entryPoints.map(e => `\`${e}\``).join(', ')}`, '')
     }
 
-    lines.push(`**Modules:**`)
-    for (const mod of graphModules) {
+    const modCap = limits.constitutionModules
+    lines.push(`**Modules (${graphModules.length}):**`)
+    const sorted = [...graphModules].sort((a, b) => b.lines - a.lines)
+    const shown = sorted.slice(0, modCap)
+    for (const mod of shown) {
       lines.push(`- **${mod.name}** (${mod.files.length} files, ${mod.lines} lines) — ${mod.language}`)
+    }
+    if (graphModules.length > modCap) {
+      lines.push(`- ...and ${graphModules.length - modCap} more modules`)
     }
     lines.push('')
 
@@ -80,7 +93,9 @@ export async function generateConstitution(projectRoot: string, data?: Constitut
     if (externalDeps) {
       const extDeps = Object.keys(externalDeps)
       if (extDeps.length > 0) {
-        lines.push(`**External dependencies:** ${extDeps.map(d => `\`${d}\``).join(', ')}`, '')
+        const depCap = limits.constitutionDeps
+        const shownDeps = extDeps.slice(0, depCap)
+        lines.push(`**External dependencies (${extDeps.length}):** ${shownDeps.map(d => `\`${d}\``).join(', ')}${extDeps.length > depCap ? `, ...and ${extDeps.length - depCap} more` : ''}`, '')
       }
     }
   }
@@ -90,7 +105,7 @@ export async function generateConstitution(projectRoot: string, data?: Constitut
     lines.push(`## Risk Map`, '')
 
     // Top hotspots
-    const topHotspots = temporal.hotspots.slice(0, 5)
+    const topHotspots = temporal.hotspots.slice(0, limits.constitutionHotspots)
     if (topHotspots.length > 0) {
       lines.push(`**Hottest files (most changes):**`)
       for (const h of topHotspots) {
@@ -103,7 +118,7 @@ export async function generateConstitution(projectRoot: string, data?: Constitut
     const hiddenCouplings = temporal.coupling.filter(c => !c.hasImport && c.strength >= 0.5)
     if (hiddenCouplings.length > 0) {
       lines.push(`**Hidden dependencies (co-change but no import):**`)
-      for (const c of hiddenCouplings.slice(0, 5)) {
+      for (const c of hiddenCouplings.slice(0, limits.constitutionCouplings)) {
         lines.push(`- \`${c.fileA}\` ↔ \`${c.fileB}\` — ${c.cochanges} co-changes (${Math.round(c.strength * 100)}%)`)
       }
       lines.push('')
@@ -113,9 +128,9 @@ export async function generateConstitution(projectRoot: string, data?: Constitut
     const buggy = temporal.bugHistory.filter(b => b.fixCommits >= 2)
     if (buggy.length > 0) {
       lines.push(`**Bug-prone files:**`)
-      for (const b of buggy.slice(0, 5)) {
+      for (const b of buggy.slice(0, limits.constitutionBugs)) {
         lines.push(`- \`${b.file}\` — ${b.fixCommits} fix commits`)
-        for (const lesson of b.lessons.slice(0, 3)) {
+        for (const lesson of b.lessons.slice(0, limits.constitutionLessons)) {
           lines.push(`  - ${lesson}`)
         }
       }

@@ -133,6 +133,8 @@ export interface SessionLog {
 
 // ─── Manifest (cortex.yaml) ───
 
+export type { ProjectSize } from '../core/project-size.js'
+
 export interface CortexManifest {
   version: string
   project: string
@@ -143,6 +145,7 @@ export interface CortexManifest {
   totalFiles: number
   totalSymbols: number
   totalModules: number
+  projectSize: import('../core/project-size.js').ProjectSize
   tiers: {
     hot: string[]
     warm: string[]

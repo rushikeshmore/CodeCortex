@@ -2,8 +2,14 @@
 
 Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn your codebase every session.
 
-> **⚠️ If you're on v0.4.3 or earlier, update now:** `npm install -g codecortex-ai@latest`
-> v0.4.4 adds freshness flags on all MCP responses and `get_edit_briefing` — a pre-edit risk briefing tool.
+[![CI](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml/badge.svg)](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/codecortex-ai)](https://www.npmjs.com/package/codecortex-ai)
+[![npm downloads](https://img.shields.io/npm/dw/codecortex-ai)](https://www.npmjs.com/package/codecortex-ai)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rushikeshmore/CodeCortex/badge)](https://scorecard.dev/viewer/?uri=github.com/rushikeshmore/CodeCortex)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rushikeshmore/CodeCortex/blob/main/LICENSE)
+
+> **⚠️ If you're on v0.4.x or earlier, update now:** `npm install -g codecortex-ai@latest`
+> v0.5.0 adds context-safe response caps on all tools, ranked symbol search, agent auto-onboarding, and parameter consistency fixes.
 
 [Website](https://codecortex-ai.vercel.app) · [npm](https://www.npmjs.com/package/codecortex-ai) · [GitHub](https://github.com/rushikeshmore/CodeCortex)
 
@@ -47,8 +53,26 @@ codecortex status
 
 ### Connect to Claude Code
 
-Add to your MCP config:
+**CLI (recommended):**
+```bash
+claude mcp add codecortex -- codecortex serve
+```
 
+**Or add to MCP config manually:**
+```json
+{
+  "mcpServers": {
+    "codecortex": {
+      "command": "codecortex",
+      "args": ["serve"],
+      "cwd": "/path/to/your-project"
+    }
+  }
+}
+```
+
+### Connect to Cursor
+Add to `.cursor/mcp.json`:
 ```json
 {
   "mcpServers": {
@@ -104,12 +128,12 @@ Example from a real codebase:
 
 | Tool | Description |
 |------|-------------|
-| `get_project_overview` | Constitution + overview + graph summary |
-| `get_module_context` | Module doc by name, includes temporal signals |
+| `get_project_overview` | Constitution + graph summary (context-safe, ~2K chars) |
+| `get_module_context` | Module doc by name, includes temporal signals (capped at 8K) |
 | `get_session_briefing` | Changes since last session |
-| `search_knowledge` | Keyword search across all knowledge |
-| `get_decision_history` | Decision records filtered by topic |
-| `get_dependency_graph` | Import/export graph, filterable |
+| `search_knowledge` | Ranked search across symbols, file paths, and docs |
+| `get_decision_history` | Decision records filtered by topic (capped at 10) |
+| `get_dependency_graph` | Summary dashboard or scoped edges (capped at 50) |
 | `lookup_symbol` | Symbol by name/file/kind |
 | `get_change_coupling` | What files must I also edit if I touch X? |
 | `get_hotspots` | Files ranked by risk (churn x coupling) |
