@@ -2,7 +2,7 @@
  * CodeCortex MCP Server
  *
  * Serves codebase knowledge to AI agents via Model Context Protocol.
- * 13 tools: 10 read (navigation + risk) + 3 write (knowledge creation).
+ * 13 tools: 8 read + 5 write (navigation, risk, memory).
  *
  * Usage:
  *   codecortex serve
@@ -28,7 +28,7 @@ export function createServer(projectRoot: string): McpServer {
   const server = new McpServer({
     name: 'codecortex',
     version: '0.5.0',
-    description: 'Codebase navigation and risk layer for AI agents. Pre-built map of architecture, dependencies, coupling, and risk areas.',
+    description: 'Persistent codebase knowledge layer for AI agents. Architecture, dependencies, coupling, risk, and cross-session memory.',
   })
 
   registerReadTools(server, projectRoot)
