@@ -1,7 +1,7 @@
 {
   "name": "codecortex-ai",
   "version": "0.5.0",
-  "description": "Codebase navigation and risk layer for AI agents — architecture, dependencies, coupling, and risk areas served via MCP",
+  "description": "Persistent codebase knowledge layer for AI agents — architecture, dependencies, coupling, and risk served via MCP",
   "type": "module",
   "bin": {
     "codecortex": "dist/cli/index.js"

@@ -1,6 +1,6 @@
 # CodeCortex
 
-Codebase navigation and risk layer for AI agents. Pre-builds a map of architecture, dependencies, coupling, and risk areas so agents go straight to the right files.
+Persistent codebase knowledge layer for AI agents. Pre-builds architecture, dependency, coupling, and risk knowledge so agents skip the cold start and go straight to the right files.
 
 ## Stack
 - TypeScript, ESM (`"type": "module"`)

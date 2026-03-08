@@ -1,6 +1,6 @@
 # CodeCortex
 
-Codebase navigation and risk layer for AI agents. Pre-builds a map of architecture, dependencies, coupling, and risk areas so agents go straight to the right files.
+Persistent codebase knowledge layer for AI agents. Pre-builds architecture, dependencies, coupling, and risk knowledge so agents skip the cold start and go straight to the right files.
 
 [![CI](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml/badge.svg)](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/codecortex-ai)](https://www.npmjs.com/package/codecortex-ai)
@@ -24,9 +24,9 @@ Every AI coding session starts with exploration — grepping, reading wrong file
 
 ## The Solution
 
-CodeCortex gives agents a pre-built map: architecture, dependencies, risk areas, hidden coupling. The agent goes straight to the right files and starts working.
+CodeCortex eliminates the cold start. It pre-builds codebase knowledge — architecture, dependencies, risk areas, hidden coupling — so agents skip the exploration phase and go straight to the right files.
 
-**CodeCortex finds WHERE to look. Your agent still reads the code.**
+**Not a middleware. Not a proxy. Just knowledge your agent loads on day one.**
 
 Tested on a real 6,400-file codebase (143K symbols, 96 modules):
 
