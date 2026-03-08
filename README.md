@@ -2,10 +2,8 @@
 
 Persistent codebase knowledge layer for AI agents. Pre-builds architecture, dependencies, coupling, and risk knowledge so agents skip the cold start and go straight to the right files.
 
-[![CI](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml/badge.svg)](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/codecortex-ai)](https://www.npmjs.com/package/codecortex-ai)
 [![npm downloads](https://img.shields.io/npm/dw/codecortex-ai)](https://www.npmjs.com/package/codecortex-ai)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rushikeshmore/CodeCortex/badge)](https://scorecard.dev/viewer/?uri=github.com/rushikeshmore/CodeCortex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rushikeshmore/CodeCortex/blob/main/LICENSE)
 
 [Website](https://codecortex-ai.vercel.app) · [npm](https://www.npmjs.com/package/codecortex-ai) · [GitHub](https://github.com/rushikeshmore/CodeCortex)
