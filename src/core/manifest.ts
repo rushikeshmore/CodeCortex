@@ -1,6 +1,7 @@
 import type { CortexManifest } from '../types/index.js'
 import { readFile, writeFile, cortexPath } from '../utils/files.js'
 import { parseYaml, stringifyYaml } from '../utils/yaml.js'
+import { classifyProject } from './project-size.js'
 
 export async function readManifest(projectRoot: string): Promise<CortexManifest | null> {
   const content = await readFile(cortexPath(projectRoot, 'cortex.yaml'))
@@ -32,6 +33,7 @@ export function createManifest(opts: {
     totalFiles: opts.totalFiles,
     totalSymbols: opts.totalSymbols,
     totalModules: opts.totalModules,
+    projectSize: classifyProject(opts.totalFiles, opts.totalSymbols, opts.totalModules),
     tiers: {
       hot: ['cortex.yaml', 'constitution.md', 'overview.md', 'graph.json', 'symbols.json', 'temporal.json'],
       warm: ['modules/'],
@@ -47,10 +49,11 @@ export async function updateManifest(
   const manifest = await readManifest(projectRoot)
   if (!manifest) return null
 
+  const merged = { ...manifest, ...updates }
   const updated: CortexManifest = {
-    ...manifest,
-    ...updates,
+    ...merged,
     lastUpdated: new Date().toISOString(),
+    projectSize: classifyProject(merged.totalFiles, merged.totalSymbols, merged.totalModules),
   }
 
   await writeManifest(projectRoot, updated)

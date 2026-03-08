@@ -81,32 +81,45 @@ async function printModuleDetail(
     console.log(`Run \`codecortex init\` to generate structural docs.`)
   }
 
-  // Dependencies
+  // Dependencies (capped to prevent terminal flood on large modules)
   const deps = getModuleDependencies(graph, name)
+  const EDGE_CAP = 30
 
   if (deps.imports.length > 0) {
     console.log('')
-    console.log('Imports:')
+    console.log(`Imports (${deps.imports.length} total):`)
     const seen = new Set<string>()
+    let shown = 0
     for (const edge of deps.imports) {
+      if (shown >= EDGE_CAP) break
       const key = `${edge.source} -> ${edge.target}`
       if (seen.has(key)) continue
       seen.add(key)
       const specifiers = edge.specifiers.length > 0 ? ` [${edge.specifiers.join(', ')}]` : ''
       console.log(`  ${edge.source} -> ${edge.target}${specifiers}`)
+      shown++
+    }
+    if (deps.imports.length > EDGE_CAP) {
+      console.log(`  ...and ${deps.imports.length - EDGE_CAP} more. Use MCP tools for full graph.`)
     }
   }
 
   if (deps.importedBy.length > 0) {
     console.log('')
-    console.log('Imported By:')
+    console.log(`Imported By (${deps.importedBy.length} total):`)
     const seen = new Set<string>()
+    let shown = 0
     for (const edge of deps.importedBy) {
+      if (shown >= EDGE_CAP) break
       const key = `${edge.source} -> ${edge.target}`
       if (seen.has(key)) continue
       seen.add(key)
       const specifiers = edge.specifiers.length > 0 ? ` [${edge.specifiers.join(', ')}]` : ''
       console.log(`  ${edge.source} -> ${edge.target}${specifiers}`)
+      shown++
+    }
+    if (deps.importedBy.length > EDGE_CAP) {
+      console.log(`  ...and ${deps.importedBy.length - EDGE_CAP} more. Use MCP tools for full graph.`)
     }
   }
 

@@ -31,9 +31,10 @@ lastUpdated: 2026-03-02T00:00:00.000Z
 languages:
   - typescript
   - python
-totalFiles: 5
-totalSymbols: 12
+totalFiles: 6
+totalSymbols: 14
 totalModules: 2
+projectSize: micro
 tiers:
   hot:
     - cortex.yaml
@@ -58,8 +59,8 @@ tiers:
 ## Project
 - **Name:** test-project
 - **Languages:** typescript, python
-- **Files:** 5
-- **Symbols:** 12
+- **Files:** 6
+- **Symbols:** 14
 - **Modules:** 2
 
 ## Architecture
@@ -75,7 +76,7 @@ tiers:
 
 **Type:** node
 **Languages:** typescript, python
-**Files:** 5
+**Files:** 6
 
 ## Entry Points
 - \`src/index.ts\`
@@ -88,12 +89,14 @@ tiers:
   // symbols.json
   const symbols = {
     generated: '2026-03-02T00:00:00.000Z',
-    total: 4,
+    total: 6,  // 4 original + 2 auth symbols
     symbols: [
       { name: 'processData', kind: 'function', file: 'src/core/processor.ts', startLine: 5, endLine: 20, signature: 'export function processData(input: string): Result', exported: true },
       { name: 'Result', kind: 'interface', file: 'src/core/types.ts', startLine: 1, endLine: 8, signature: 'export interface Result', exported: true },
       { name: 'formatOutput', kind: 'function', file: 'src/utils/format.ts', startLine: 3, endLine: 10, signature: 'export function formatOutput(data: Result): string', exported: true },
       { name: 'TIMEOUT', kind: 'const', file: 'src/utils/config.ts', startLine: 1, endLine: 1, signature: 'const TIMEOUT = 5000', exported: false },
+      { name: 'authenticate', kind: 'function', file: 'src/core/auth.ts', startLine: 1, endLine: 15, signature: 'export function authenticate(token: string): boolean', exported: true },
+      { name: 'processAuth', kind: 'function', file: 'src/core/auth.ts', startLine: 20, endLine: 30, signature: 'export function processAuth(req: Request): User', exported: true },
     ],
   }
   await writeFile(join(cortex, 'symbols.json'), JSON.stringify(symbols, null, 2))
@@ -102,7 +105,7 @@ tiers:
   const graph = {
     generated: '2026-03-02T00:00:00.000Z',
     modules: [
-      { path: 'src/core', name: 'core', files: ['src/core/processor.ts', 'src/core/types.ts', 'src/core/index.ts'], language: 'typescript', lines: 200, symbols: 2 },
+      { path: 'src/core', name: 'core', files: ['src/core/processor.ts', 'src/core/types.ts', 'src/core/index.ts', 'src/core/auth.ts'], language: 'typescript', lines: 250, symbols: 4 },
       { path: 'src/utils', name: 'utils', files: ['src/utils/format.ts', 'src/utils/config.ts'], language: 'typescript', lines: 100, symbols: 2 },
     ],
     imports: [

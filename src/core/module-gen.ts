@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs'
 import { cortexPath } from '../utils/files.js'
 import { writeModuleDoc } from './modules.js'
 import { getModuleDependencies } from './graph.js'
+import { summarizeFileList } from '../utils/truncate.js'
+import { classifyProject, getSizeLimits } from './project-size.js'
 import type { DependencyGraph, SymbolRecord, TemporalData, ModuleAnalysis } from '../types/index.js'
 
 export interface StructuralModuleData {
@@ -14,6 +16,9 @@ export async function generateStructuralModuleDocs(
   projectRoot: string,
   data: StructuralModuleData,
 ): Promise<number> {
+  const totalFiles = data.graph.modules.reduce((s, m) => s + m.files.length, 0)
+  const totalSymbols = data.symbols.length
+  const limits = getSizeLimits(classifyProject(totalFiles, totalSymbols, data.graph.modules.length))
   let generated = 0
 
   for (const mod of data.graph.modules) {
@@ -81,11 +86,25 @@ export async function generateStructuralModuleDocs(
       }
     }
 
+    // Group files by type instead of raw list dump
+    const fileSummary = summarizeFileList(mod.files)
+    const dataFlow = Object.entries(fileSummary.byType)
+      .map(([type, { count, sample }]) => {
+        const sampleStr = sample.slice(0, limits.moduleFileSampleCap).join(', ')
+        return `${type}: ${count} files (${sampleStr}${count > limits.moduleFileSampleCap ? ', ...' : ''})`
+      })
+      .join('. ') || `${mod.files.length} files`
+
+    const symCap = limits.moduleExportedSymbolCap
+    const cappedExported = exported.length > symCap
+      ? [...exported.slice(0, symCap), `...and ${exported.length - symCap} more`]
+      : exported
+
     const analysis: ModuleAnalysis = {
       name: mod.name,
-      purpose: `${mod.files.length} files, ${mod.lines} lines (${mod.language}). Auto-generated from code structure — use \`analyze_module\` MCP tool for semantic analysis.`,
-      dataFlow: `Files: ${mod.files.join(', ')}`,
-      publicApi: exported,
+      purpose: `${mod.files.length} files, ${mod.lines} lines (${mod.language}). Auto-generated from code structure. Updated on each commit via git hooks.`,
+      dataFlow,
+      publicApi: cappedExported,
       gotchas: [],
       dependencies: depLines,
       temporalSignals,

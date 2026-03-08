@@ -18,7 +18,7 @@ import { createFixture, type Fixture } from '../fixtures/setup.js'
 import { readFile, writeFile, cortexPath, ensureDir } from '../../src/utils/files.js'
 import { readManifest } from '../../src/core/manifest.js'
 import { readGraph, getModuleDependencies, getMostImportedFiles } from '../../src/core/graph.js'
-import { readModuleDoc, writeModuleDoc, listModuleDocs, buildAnalysisPrompt } from '../../src/core/modules.js'
+import { readModuleDoc, writeModuleDoc, listModuleDocs } from '../../src/core/modules.js'
 import { writeDecision, createDecision, listDecisions, readDecision } from '../../src/core/decisions.js'
 import { writeSession, createSession, listSessions, readSession, getLatestSession } from '../../src/core/sessions.js'
 import { addPattern, readPatterns } from '../../src/core/patterns.js'
@@ -210,8 +210,8 @@ describe('Persona 3: Feature Developer — write workflow', () => {
     expect(graph!.modules.map(m => m.name)).toContain('utils')
   })
 
-  it('Step 2: calls analyze_module for "utils"', async () => {
-    // Tool: analyze_module { name: "utils" }
+  it('Step 2: inspects "utils" module from graph and writes structural doc', async () => {
+    // Agent reads the graph to understand module structure
     const graph = await readGraph(fixture.root)
     const module = graph!.modules.find(m => m.name === 'utils')
 
@@ -219,19 +219,7 @@ describe('Persona 3: Feature Developer — write workflow', () => {
     expect(module!.files).toContain('src/utils/format.ts')
     expect(module!.files).toContain('src/utils/config.ts')
 
-    // In real flow, source files would be read and a prompt generated
-    const prompt = buildAnalysisPrompt('utils', [
-      { path: 'src/utils/format.ts', content: 'export function formatOutput(data: any): string { return JSON.stringify(data) }' },
-      { path: 'src/utils/config.ts', content: 'const TIMEOUT = 5000; export { TIMEOUT }' },
-    ])
-
-    expect(prompt).toContain('utils')
-    expect(prompt).toContain('formatOutput')
-    expect(prompt).toContain('purpose')
-  })
-
-  it('Step 3: calls save_module_analysis with structured analysis', async () => {
-    // Tool: save_module_analysis { analysis: {...} }
+    // Agent writes a module doc based on what it learned from reading code
     const analysis: ModuleAnalysis = {
       name: 'utils',
       purpose: 'Shared utility functions for formatting output and configuration constants.',

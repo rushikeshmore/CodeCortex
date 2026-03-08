@@ -25,7 +25,7 @@ afterAll(async () => {
   await fixture.cleanup()
 })
 
-describe('save_module_analysis (tool 11)', () => {
+describe('module doc write/read (used by structural gen)', () => {
   it('writes module doc and can read it back', async () => {
     const analysis: ModuleAnalysis = {
       name: 'core',
@@ -50,7 +50,7 @@ describe('save_module_analysis (tool 11)', () => {
   })
 })
 
-describe('record_decision (tool 12)', () => {
+describe('record_decision (tool 11)', () => {
   it('writes decision and reads it back', async () => {
     const decision = createDecision({
       title: 'Use tree-sitter for parsing',
@@ -74,7 +74,7 @@ describe('record_decision (tool 12)', () => {
   })
 })
 
-describe('update_patterns (tool 13)', () => {
+describe('update_patterns (tool 12)', () => {
   it('adds a new pattern', async () => {
     const result = await addPattern(fixture.root, {
       name: 'Error Handling',
@@ -105,45 +105,48 @@ describe('update_patterns (tool 13)', () => {
   })
 })
 
-describe('report_feedback (tool 14)', () => {
-  it('records feedback entry', async () => {
-    const dir = cortexPath(fixture.root, 'feedback')
+describe('record_observation (tool 13)', () => {
+  it('records an observation entry', async () => {
+    const dir = cortexPath(fixture.root, 'observations')
     await ensureDir(dir)
 
     const entry = {
       date: new Date().toISOString(),
-      file: 'modules/core.md',
-      issue: 'Purpose description is outdated',
+      topic: 'circular dependency in auth',
+      observation: 'Auth module imports from user module which imports back from auth',
+      files: ['src/auth/index.ts', 'src/user/index.ts'],
       reporter: 'agent',
     }
 
-    const feedbackPath = cortexPath(fixture.root, 'feedback', 'log.json')
-    const existing = await readFile(feedbackPath)
+    const obsPath = cortexPath(fixture.root, 'observations', 'log.json')
+    const existing = await readFile(obsPath)
     const entries = existing ? JSON.parse(existing) : []
     entries.push(entry)
-    await writeFile(feedbackPath, JSON.stringify(entries, null, 2))
+    await writeFile(obsPath, JSON.stringify(entries, null, 2))
 
     // Read back
-    const content = await readFile(feedbackPath)
+    const content = await readFile(obsPath)
     const parsed = JSON.parse(content!)
     expect(parsed).toHaveLength(1)
-    expect(parsed[0].issue).toBe('Purpose description is outdated')
+    expect(parsed[0].topic).toBe('circular dependency in auth')
+    expect(parsed[0].observation).toContain('Auth module')
     expect(parsed[0].reporter).toBe('agent')
   })
 
-  it('appends multiple feedback entries', async () => {
-    const feedbackPath = cortexPath(fixture.root, 'feedback', 'log.json')
-    const existing = await readFile(feedbackPath)
+  it('appends multiple observation entries', async () => {
+    const obsPath = cortexPath(fixture.root, 'observations', 'log.json')
+    const existing = await readFile(obsPath)
     const entries = existing ? JSON.parse(existing) : []
     entries.push({
       date: new Date().toISOString(),
-      file: 'patterns.md',
-      issue: 'Missing pattern for logging',
-      reporter: 'user',
+      topic: 'Docker required for tests',
+      observation: 'Integration tests need Docker running for the database container',
+      files: ['docker-compose.yml'],
+      reporter: 'agent',
     })
-    await writeFile(feedbackPath, JSON.stringify(entries, null, 2))
+    await writeFile(obsPath, JSON.stringify(entries, null, 2))
 
-    const content = await readFile(feedbackPath)
+    const content = await readFile(obsPath)
     const parsed = JSON.parse(content!)
     expect(parsed).toHaveLength(2)
   })

@@ -1,117 +1,16 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { readFile as readFileUtil, cortexPath } from '../../utils/files.js'
-import { ModuleAnalysisSchema, DecisionInputSchema, PatternInputSchema, FeedbackInputSchema } from '../../types/schema.js'
-import { writeModuleDoc, buildAnalysisPrompt, listModuleDocs } from '../../core/modules.js'
 import { writeDecision, createDecision } from '../../core/decisions.js'
 import { addPattern } from '../../core/patterns.js'
 import { writeFile, ensureDir } from '../../utils/files.js'
-import { readGraph } from '../../core/graph.js'
-import type { ModuleAnalysis, TemporalData, Hotspot, ChangeCoupling, BugRecord } from '../../types/index.js'
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
 
 function textResult(data: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] }
 }
 
 export function registerWriteTools(server: McpServer, projectRoot: string): void {
-  // --- Tool 10: analyze_module ---
-  server.registerTool(
-    'analyze_module',
-    {
-      description: 'Prepares a module for analysis. Returns the source files and a structured prompt. You should read the source files, analyze them, then call save_module_analysis with the result.',
-      inputSchema: {
-        name: z.string().describe('Module name (e.g., "scoring", "api")'),
-      },
-    },
-    async ({ name }) => {
-      const graph = await readGraph(projectRoot)
-      if (!graph) {
-        return textResult({ error: 'No graph data. Run codecortex init first.' })
-      }
-
-      const module = graph.modules.find(m => m.name === name)
-      if (!module) {
-        const available = graph.modules.map(m => m.name)
-        return textResult({ error: `Module "${name}" not found`, available })
-      }
-
-      // Read source files for this module
-      const sourceFiles: { path: string; content: string }[] = []
-      for (const filePath of module.files) {
-        try {
-          const content = await readFile(join(projectRoot, filePath), 'utf-8')
-          sourceFiles.push({ path: filePath, content })
-        } catch {
-          // Skip files that can't be read
-        }
-      }
-
-      const prompt = buildAnalysisPrompt(name, sourceFiles)
-
-      return textResult({
-        module: name,
-        files: module.files,
-        prompt,
-        instruction: 'Analyze the source files above and call save_module_analysis with the JSON result.',
-      })
-    }
-  )
-
-  // --- Tool 11: save_module_analysis ---
-  server.registerTool(
-    'save_module_analysis',
-    {
-      description: 'Save the result of a module analysis. Provide the structured analysis (purpose, dataFlow, publicApi, gotchas, dependencies) and it will be persisted to modules/*.md.',
-      inputSchema: {
-        analysis: ModuleAnalysisSchema.describe('The structured module analysis'),
-      },
-    },
-    async ({ analysis }) => {
-      const moduleAnalysis: ModuleAnalysis = {
-        ...analysis,
-      }
-
-      // Enrich with temporal data if available
-      const temporalContent = await readFileUtil(cortexPath(projectRoot, 'temporal.json'))
-      if (temporalContent) {
-        const temporal: TemporalData = JSON.parse(temporalContent)
-        const hotspot = temporal.hotspots?.find((h: Hotspot) =>
-          h.file.includes(`/${analysis.name}/`) || h.file.includes(`${analysis.name}.`)
-        )
-        const couplings = temporal.coupling?.filter((c: ChangeCoupling) =>
-          c.fileA.includes(`/${analysis.name}/`) || c.fileB.includes(`/${analysis.name}/`)
-        ) || []
-        const bugs = temporal.bugHistory?.filter((b: BugRecord) =>
-          b.file.includes(`/${analysis.name}/`)
-        ) || []
-
-        if (hotspot || couplings.length > 0 || bugs.length > 0) {
-          moduleAnalysis.temporalSignals = {
-            churn: hotspot ? `${hotspot.changes} changes (${hotspot.stability})` : 'unknown',
-            coupledWith: couplings.map((c: ChangeCoupling) => {
-              const other = c.fileA.includes(`/${analysis.name}/`) ? c.fileB : c.fileA
-              return `${other} (${c.cochanges} co-changes)`
-            }),
-            stability: hotspot?.stability || 'unknown',
-            bugHistory: bugs.flatMap((b: BugRecord) => b.lessons),
-            lastChanged: hotspot?.lastChanged || 'unknown',
-          }
-        }
-      }
-
-      await writeModuleDoc(projectRoot, moduleAnalysis)
-
-      return textResult({
-        saved: true,
-        module: analysis.name,
-        path: `.codecortex/modules/${analysis.name}.md`,
-      })
-    }
-  )
-
-  // --- Tool 12: record_decision ---
+  // --- Tool 11: record_decision ---
   server.registerTool(
     'record_decision',
     {
@@ -136,7 +35,7 @@ export function registerWriteTools(server: McpServer, projectRoot: string): void
     }
   )
 
-  // --- Tool 13: update_patterns ---
+  // --- Tool 12: update_patterns ---
   server.registerTool(
     'update_patterns',
     {
@@ -159,39 +58,41 @@ export function registerWriteTools(server: McpServer, projectRoot: string): void
     }
   )
 
-  // --- Tool 14: report_feedback ---
+  // --- Tool 13: record_observation ---
   server.registerTool(
-    'report_feedback',
+    'record_observation',
     {
-      description: 'Report incorrect or outdated knowledge. If you discover that a module doc, decision, or pattern is wrong, report it here. The feedback will be stored and used in the next analysis cycle.',
+      description: 'Record something you learned about the codebase. Use this to capture observations, gotchas, undocumented dependencies, environment requirements, or anything future agents should know. Observations persist across sessions.',
       inputSchema: {
-        file: z.string().describe('Which knowledge file is incorrect (e.g., "modules/scoring.md")'),
-        issue: z.string().describe('What is wrong or outdated'),
+        topic: z.string().describe('Short topic label (e.g., "circular dependency in auth", "Docker required for tests")'),
+        observation: z.string().describe('What you observed or learned'),
+        files: z.array(z.string()).default([]).describe('Related file paths (optional)'),
         reporter: z.string().default('agent').describe('Who is reporting (default: agent)'),
       },
     },
-    async ({ file, issue, reporter }) => {
-      const dir = cortexPath(projectRoot, 'feedback')
+    async ({ topic, observation, files, reporter }) => {
+      const dir = cortexPath(projectRoot, 'observations')
       await ensureDir(dir)
 
       const entry = {
         date: new Date().toISOString(),
-        file,
-        issue,
+        topic,
+        observation,
+        files,
         reporter,
       }
 
-      // Append to feedback log
-      const feedbackPath = cortexPath(projectRoot, 'feedback', 'log.json')
-      const existing = await readFileUtil(feedbackPath)
+      // Append to observations log
+      const obsPath = cortexPath(projectRoot, 'observations', 'log.json')
+      const existing = await readFileUtil(obsPath)
       const entries = existing ? JSON.parse(existing) : []
       entries.push(entry)
-      await writeFile(feedbackPath, JSON.stringify(entries, null, 2))
+      await writeFile(obsPath, JSON.stringify(entries, null, 2))
 
       return textResult({
         recorded: true,
-        totalFeedback: entries.length,
-        message: 'Feedback recorded. Will be addressed in next codecortex update.',
+        totalObservations: entries.length,
+        message: 'Observation recorded. Future agents will see this.',
       })
     }
   )

@@ -13,6 +13,8 @@ import { extractCalls } from '../../extraction/calls.js'
 import { writeFile, writeJsonStream, ensureDir, cortexPath } from '../../utils/files.js'
 import { readFile } from 'node:fs/promises'
 import { generateStructuralModuleDocs } from '../../core/module-gen.js'
+import { generateAgentInstructions } from '../../core/agent-instructions.js'
+import { createDecision, writeDecision, listDecisions } from '../../core/decisions.js'
 import type { SymbolRecord, ImportEdge, CallEdge, SymbolIndex, ProjectInfo } from '../../types/index.js'
 
 export async function initCommand(opts: { root: string; days: string }): Promise<void> {
@@ -23,7 +25,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log('')
 
   // Step 1: Discover project
-  console.log('Step 1/6: Discovering project structure...')
+  console.log('Step 1/7: Discovering project structure...')
   const project = await discoverProject(root)
   console.log(`  Found ${project.files.length} files in ${project.modules.length} modules`)
   console.log(`  Languages: ${project.languages.join(', ')}`)
@@ -31,7 +33,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log('')
 
   // Step 2: Initialize tree-sitter and extract symbols
-  console.log('Step 2/6: Extracting symbols with tree-sitter...')
+  console.log('Step 2/7: Extracting symbols with tree-sitter...')
   await initParser()
 
   const allSymbols: SymbolRecord[] = []
@@ -75,7 +77,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log('')
 
   // Step 3: Build dependency graph
-  console.log('Step 3/6: Building dependency graph...')
+  console.log('Step 3/7: Building dependency graph...')
   const moduleNodes = buildModuleNodes(project.modules, project.files, allSymbols)
 
   // Detect external dependencies
@@ -106,7 +108,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log('')
 
   // Step 4: Temporal analysis (git history)
-  console.log('Step 4/6: Analyzing git history...')
+  console.log('Step 4/7: Analyzing git history...')
   let temporalData = null
   const hasGit = await isGitRepo(root)
   if (hasGit) {
@@ -121,7 +123,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log('')
 
   // Step 5: Write knowledge files
-  console.log('Step 5/6: Writing knowledge files...')
+  console.log('Step 5/7: Writing knowledge files...')
   await ensureDir(cortexPath(root))
   await ensureDir(cortexPath(root, 'modules'))
   await ensureDir(cortexPath(root, 'decisions'))
@@ -143,7 +145,8 @@ export async function initCommand(opts: { root: string; days: string }): Promise
     await writeFile(cortexPath(root, 'temporal.json'), JSON.stringify(temporalData, null, 2))
   }
 
-  // Write overview.md
+  // Write overview.md — compact summary only (no raw file listing)
+  // The constitution + graph.json already contain all the detail an agent needs.
   const overview = generateOverview(project)
   await writeFile(cortexPath(root, 'overview.md'), overview)
 
@@ -172,7 +175,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log('')
 
   // Step 6: Generate constitution
-  console.log('Step 6/6: Generating constitution...')
+  console.log('Step 6/7: Generating constitution...')
   await generateConstitution(root, {
     modules: moduleNodes,
     entryPoints: project.entryPoints,
@@ -180,6 +183,26 @@ export async function initCommand(opts: { root: string; days: string }): Promise
     temporal: temporalData,
   })
   console.log('  Written: constitution.md')
+  console.log('')
+
+  // Step 7: Agent onboarding
+  console.log('Step 7/7: Generating agent instructions...')
+  const updatedFiles = await generateAgentInstructions(root)
+
+  // Seed a starter decision (skip if decisions already exist)
+  const existingDecisions = await listDecisions(root)
+  if (existingDecisions.length === 0) {
+    const seedDecision = createDecision({
+      title: 'Initialized CodeCortex for codebase knowledge',
+      context: 'AI agents need persistent knowledge to avoid re-learning the codebase each session.',
+      decision: 'Using CodeCortex to pre-analyze symbols, dependencies, coupling, and patterns.',
+      alternatives: ['Manual CLAUDE.md only', 'No codebase context for agents'],
+      consequences: ['AI agents start with knowledge', '.codecortex/ added to repo', 'Knowledge needs periodic update via codecortex update'],
+    })
+    await writeDecision(root, seedDecision)
+  }
+
+  console.log(`  Written: ${updatedFiles.join(', ')}`)
   console.log('')
 
   // Summary
@@ -203,7 +226,11 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   }
   console.log('')
   console.log(`Knowledge stored in: ${cortexPath(root)}`)
-  console.log('Run `codecortex serve` to start the MCP server.')
+  console.log('')
+  console.log('Connect your AI agent:')
+  console.log('  Claude Code:    claude mcp add codecortex -- codecortex serve')
+  console.log('  Claude Desktop: Add to claude_desktop_config.json (see README)')
+  console.log('  Cursor:         Add to .cursor/mcp.json (see README)')
 }
 
 function generateOverview(project: ProjectInfo): string {
@@ -220,26 +247,23 @@ function generateOverview(project: ProjectInfo): string {
     `## Modules`,
     ...project.modules.map(m => `- **${m}**`),
     '',
-    `## File Map`,
+    `## Directory Summary`,
   ]
 
-  // Group files by directory
-  const dirs = new Map<string, string[]>()
+  // Group files by top-level directory with counts (not raw file listings)
+  const topDirs = new Map<string, number>()
   for (const file of project.files) {
     const parts = file.path.split('/')
-    const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.'
-    const existing = dirs.get(dir) || []
-    const fileName = parts[parts.length - 1]
-    if (fileName) existing.push(fileName)
-    dirs.set(dir, existing)
+    const topDir = parts.length > 1 ? parts[0]! : '.'
+    topDirs.set(topDir, (topDirs.get(topDir) || 0) + 1)
   }
 
-  for (const [dir, files] of [...dirs.entries()].sort()) {
-    lines.push(`\n### ${dir}/`)
-    for (const file of files.sort()) {
-      lines.push(`- ${file}`)
-    }
+  for (const [dir, count] of [...topDirs.entries()].sort((a, b) => b[1] - a[1])) {
+    lines.push(`- **${dir}/** — ${count} files`)
   }
+
+  lines.push('')
+  lines.push('> For detailed file lists, use `search_knowledge` or `get_dependency_graph` MCP tools.')
 
   return lines.join('\n') + '\n'
 }
