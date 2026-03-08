@@ -41,7 +41,7 @@ describe('capString', () => {
   it('truncates long strings with notice', () => {
     const long = 'a'.repeat(200)
     const result = capString(long, 100)
-    expect(result).toHaveLength(100 + '\n\n[truncated — use analyze_module for full detail]'.length)
+    expect(result).toHaveLength(100 + '\n\n[truncated — use detail: "full" for complete data]'.length)
     expect(result).toContain('[truncated')
   })
 

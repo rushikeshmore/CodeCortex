@@ -1,6 +1,6 @@
 # CodeCortex
 
-Persistent, AI-powered codebase knowledge layer. Pre-digests codebases into structured knowledge and serves to AI agents via MCP.
+Codebase navigation and risk layer for AI agents. Pre-builds a map of architecture, dependencies, coupling, and risk areas so agents go straight to the right files.
 
 ## Stack
 - TypeScript, ESM (`"type": "module"`)
@@ -49,9 +49,9 @@ Hybrid extraction:
 - `codecortex hook install|uninstall|status` - manage git hooks for auto-update
 - `codecortex upgrade` - check for and install latest version
 
-## MCP Tools (15)
+## MCP Tools (13)
 Read (10): get_project_overview, get_module_context, get_session_briefing, search_knowledge, get_decision_history, get_dependency_graph, lookup_symbol, get_change_coupling, get_hotspots, get_edit_briefing
-Write (5): analyze_module, save_module_analysis, record_decision, update_patterns, report_feedback
+Write (3): record_decision, update_patterns, record_observation
 
 All read tools include `_freshness` metadata (status, lastAnalyzed, filesChangedSince, changedFiles, message).
 All read tools return context-safe responses (<10K chars) via truncation utilities in `src/utils/truncate.ts`.
@@ -72,7 +72,7 @@ Run ALL of these before `npm publish`. Do not skip any step.
 - **Grammar smoke test** (`parser.test.ts`): Loads every language in `LANGUAGE_LOADERS` via `parseSource()`. Catches missing packages, broken native builds, wrong require paths. This is what would have caught the tree-sitter-liquid issue.
 - **Version-check tests**: Update notification, cache lifecycle, PM detection, upgrade commands.
 - **Hook tests**: Git hook install/uninstall/status integration tests.
-- **MCP tests**: All 15 tools (read + write), simulation tests.
+- **MCP tests**: All 13 tools (read + write), simulation tests.
 
 ### Known limitations
 - tree-sitter native bindings don't compile on Node 24 yet (upstream issue)

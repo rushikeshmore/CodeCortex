@@ -176,7 +176,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
   server.registerTool(
     'search_knowledge',
     {
-      description: 'Search across symbols (functions, classes, types), file paths, and knowledge docs. Returns ranked results: symbol definitions first, then file paths, then doc matches. Use instead of grep for finding code concepts.',
+      description: 'Find where a function, class, type, or file is DEFINED. Returns ranked results: exported definitions first, local vars demoted. For content/concept search ("how does X work?"), use grep instead — this tool searches symbol names, not file contents.',
       inputSchema: {
         query: z.string().describe('Search term or phrase (e.g., "auth", "processData", "gateway")'),
         limit: z.number().int().min(1).max(50).optional().describe('Max results to return. Defaults to size-adaptive limit.'),
@@ -296,7 +296,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
   server.registerTool(
     'lookup_symbol',
     {
-      description: 'Look up a symbol (function, class, type, interface, const) by name. Returns file path, line numbers, signature, and whether it\'s exported. Use to find where something is defined.',
+      description: 'Precise symbol lookup with kind and file path filters. Use when you know what you\'re looking for — e.g., "all interfaces in gateway/" or "the function named processData". Returns file path, line numbers, signature, exported status.',
       inputSchema: {
         name: z.string().describe('Symbol name to search for'),
         kind: z.enum(['function', 'class', 'interface', 'type', 'const', 'enum', 'method', 'property', 'variable']).optional().describe('Filter by symbol kind'),

@@ -26,7 +26,7 @@ export function truncateArray<T>(arr: T[], limit: number, label: string): Trunca
 /** Cap a string at a max character length. */
 export function capString(str: string, maxChars: number): string {
   if (str.length <= maxChars) return str
-  return str.slice(0, maxChars) + '\n\n[truncated — use analyze_module for full detail]'
+  return str.slice(0, maxChars) + '\n\n[truncated — use detail: "full" for complete data]'
 }
 
 export interface FileTypeSummary {

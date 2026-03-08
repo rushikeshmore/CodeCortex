@@ -1,15 +1,12 @@
 # CodeCortex
 
-Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn your codebase every session.
+Codebase navigation and risk layer for AI agents. Pre-builds a map of architecture, dependencies, coupling, and risk areas so agents go straight to the right files.
 
 [![CI](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml/badge.svg)](https://github.com/rushikeshmore/CodeCortex/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/codecortex-ai)](https://www.npmjs.com/package/codecortex-ai)
 [![npm downloads](https://img.shields.io/npm/dw/codecortex-ai)](https://www.npmjs.com/package/codecortex-ai)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rushikeshmore/CodeCortex/badge)](https://scorecard.dev/viewer/?uri=github.com/rushikeshmore/CodeCortex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rushikeshmore/CodeCortex/blob/main/LICENSE)
-
-> **⚠️ If you're on v0.4.x or earlier, update now:** `npm install -g codecortex-ai@latest`
-> v0.5.0 adds context-safe response caps on all tools, ranked symbol search, agent auto-onboarding, and parameter consistency fixes.
 
 [Website](https://codecortex-ai.vercel.app) · [npm](https://www.npmjs.com/package/codecortex-ai) · [GitHub](https://github.com/rushikeshmore/CodeCortex)
 
@@ -19,18 +16,40 @@ Persistent codebase knowledge layer for AI agents. Your AI shouldn't re-learn yo
 
 ## The Problem
 
-Every AI coding session starts from scratch. When context compacts or a new session begins, the AI re-scans the entire codebase. Same files, same tokens, same wasted time. It's like hiring a new developer every session who has to re-learn everything before writing a single line.
+Every AI coding session starts with exploration — grepping, reading wrong files, re-discovering architecture. On a 6,000-file codebase, an agent makes 37 tool calls and burns 79K tokens just to understand what's where. And it still can't tell you which files are dangerous to edit or which files secretly depend on each other.
 
 **The data backs this up:**
 - AI agents increase defect risk by 30% on unfamiliar code ([CodeScene + Lund University, 2025](https://codescene.com/hubfs/whitepapers/AI-Ready-Code-How-Code-Health-Determines-AI-Performance.pdf))
 - Code churn grew 2.5x in the AI era ([GitClear, 211M lines analyzed](https://www.gitclear.com/coding_on_copilot_data_shows_ais_downward_pressure_on_code_quality))
-- Nobody combines structural + semantic + temporal + decision knowledge in one portable tool
 
 ## The Solution
 
-CodeCortex pre-digests codebases into layered knowledge files and serves them to any AI agent via MCP. Instead of re-understanding your codebase every session, the AI starts with knowledge.
+CodeCortex gives agents a pre-built map: architecture, dependencies, risk areas, hidden coupling. The agent goes straight to the right files and starts working.
 
-**Hybrid extraction:** tree-sitter native N-API for structure (symbols, imports, calls across 27 languages) + host LLM for semantics (what modules do, why they're built that way). Zero extra API keys.
+**CodeCortex finds WHERE to look. Your agent still reads the code.**
+
+Tested on a real 6,400-file codebase (143K symbols, 96 modules):
+
+| | Without CodeCortex | With CodeCortex |
+|--|:--:|:--:|
+| Tool calls | 37 | **15** (2.5x fewer) |
+| Total tokens | 79K | **43K** (~50% fewer) |
+| Answer quality | 23/25 | **23/25** (same) |
+| Hidden dependencies found | No | **Yes** |
+
+### What makes it unique
+
+Three capabilities no other tool provides:
+
+1. **Temporal coupling** — Files that always change together but have zero imports between them. You can read every line and never discover this. Only git co-change analysis reveals it.
+
+2. **Risk scores** — File X has been bug-fixed 7 times, has 6 hidden dependencies, and co-changes with 3 other files. Risk score: 35. You can't learn this from reading code.
+
+3. **Cross-session memory** — Decisions, patterns, observations persist. The agent doesn't start from zero each session.
+
+**Example from a real codebase:**
+- `schema.help.ts` and `schema.labels.ts` co-changed in 12/14 commits (86%) with **zero imports between them**
+- Without this knowledge, an AI editing one file would produce a bug 86% of the time
 
 ## Quick Start
 
@@ -43,9 +62,6 @@ npm install -g codecortex-ai --legacy-peer-deps
 # Initialize knowledge for your project
 cd /path/to/your-project
 codecortex init
-
-# Start MCP server (for AI agent access)
-codecortex serve
 
 # Check knowledge freshness
 codecortex status
@@ -97,7 +113,8 @@ All knowledge lives in `.codecortex/` as flat files in your repo:
   graph.json           # dependency graph (imports, calls, modules)
   symbols.json         # full symbol index (functions, classes, types...)
   temporal.json        # git coupling, hotspots, bug history
-  modules/*.md         # per-module deep analysis
+  AGENT.md             # tool usage guide for AI agents
+  modules/*.md         # per-module structural analysis
   decisions/*.md       # architectural decision records
   sessions/*.md        # session change logs
   patterns.md          # coding patterns and conventions
@@ -109,47 +126,42 @@ All knowledge lives in `.codecortex/` as flat files in your repo:
 |-------|------|------|
 | 1. Structural | Modules, deps, symbols, entry points | `graph.json` + `symbols.json` |
 | 2. Semantic | What each module does, data flow, gotchas | `modules/*.md` |
-| 3. Temporal | Git behavioral fingerprint - coupling, hotspots, bug history | `temporal.json` |
+| 3. Temporal | Git behavioral fingerprint — coupling, hotspots, bug history | `temporal.json` |
 | 4. Decisions | Why things are built this way | `decisions/*.md` |
 | 5. Patterns | How code is written here | `patterns.md` |
 | 6. Sessions | What changed between sessions | `sessions/*.md` |
 
-### The Temporal Layer
+## MCP Tools (13)
 
-This is the killer differentiator. The temporal layer tells agents *"if you touch file X, you MUST also touch file Y"* even when there's no import between them. This comes from git co-change analysis, not static code analysis.
-
-Example from a real codebase:
-- `routes.ts` and `worker.ts` co-changed in 9/12 commits (75%) with **zero imports between them**
-- Without this knowledge, an AI editing one file would produce a bug 75% of the time
-
-## MCP Tools (15)
-
-### Read Tools (10)
+### Navigation — "Where should I look?" (4 tools)
 
 | Tool | Description |
 |------|-------------|
-| `get_project_overview` | Constitution + graph summary (context-safe, ~2K chars) |
-| `get_module_context` | Module doc by name, includes temporal signals (capped at 8K) |
-| `get_session_briefing` | Changes since last session |
-| `search_knowledge` | Ranked search across symbols, file paths, and docs |
-| `get_decision_history` | Decision records filtered by topic (capped at 10) |
-| `get_dependency_graph` | Summary dashboard or scoped edges (capped at 50) |
-| `lookup_symbol` | Symbol by name/file/kind |
-| `get_change_coupling` | What files must I also edit if I touch X? |
-| `get_hotspots` | Files ranked by risk (churn x coupling) |
-| `get_edit_briefing` | **NEW** — Pre-edit risk briefing: co-change warnings, hidden deps, bug history, importers |
+| `get_project_overview` | Architecture, modules, risk map. Call this first. |
+| `search_knowledge` | Find where a function/class/type is DEFINED by name. Ranked results. |
+| `lookup_symbol` | Precise symbol lookup with kind and file path filters. |
+| `get_module_context` | Module files, deps, temporal signals. Zoom into a module. |
 
-All read tools include `_freshness` metadata indicating how up-to-date the knowledge is.
-
-### Write Tools (5)
+### Risk — "What could go wrong?" (4 tools)
 
 | Tool | Description |
 |------|-------------|
-| `analyze_module` | Returns source files + structured prompt for LLM analysis |
-| `save_module_analysis` | Persists LLM analysis to `modules/*.md` |
-| `record_decision` | Saves architectural decision to `decisions/*.md` |
-| `update_patterns` | Merges coding pattern into `patterns.md` |
-| `report_feedback` | Agent reports incorrect knowledge for next analysis |
+| `get_edit_briefing` | Pre-edit risk: co-change warnings, hidden deps, bug history. **Always call before editing.** |
+| `get_hotspots` | Files ranked by risk (churn x coupling x bugs). |
+| `get_change_coupling` | Files that must change together. Hidden dependencies flagged. |
+| `get_dependency_graph` | Import/export graph filtered by module or file. |
+
+### Memory — "Remember this" (5 tools)
+
+| Tool | Description |
+|------|-------------|
+| `get_session_briefing` | What changed since the last session. |
+| `get_decision_history` | Why things were built this way. |
+| `record_decision` | Save an architectural decision. |
+| `update_patterns` | Document coding conventions. |
+| `record_observation` | Record anything you learned about the codebase. |
+
+All read tools include `_freshness` metadata and return context-safe responses (<10K chars) via size-adaptive caps.
 
 ## CLI Commands
 
@@ -160,25 +172,19 @@ All read tools include `_freshness` metadata indicating how up-to-date the knowl
 | `codecortex update` | Re-extract changed files, update affected modules |
 | `codecortex status` | Show knowledge freshness, stale modules, symbol counts |
 | `codecortex symbols [query]` | Browse and filter the symbol index |
-| `codecortex search <query>` | Search across all CodeCortex knowledge files |
+| `codecortex search <query>` | Search across symbols, file paths, and docs |
 | `codecortex modules [name]` | List modules or deep-dive into a specific module |
 | `codecortex hotspots` | Show files ranked by risk: churn + coupling + bug history |
 | `codecortex hook install\|uninstall\|status` | Manage git hooks for auto-updating knowledge |
 | `codecortex upgrade` | Check for and install the latest version |
 
-## Token Efficiency
+## How It Works
 
-CodeCortex uses a three-tier memory model to minimize token usage:
+**Hybrid extraction:** tree-sitter native N-API for structure (symbols, imports, calls across 27 languages) + host LLM for semantics (what modules do, why they're built that way). Zero extra API keys.
 
-```
-Session start (HOT only):           ~4,300 tokens
-Working on a module (+WARM):         ~5,000 tokens
-Need coding patterns (+COLD):        ~5,900 tokens
+**Git hooks** keep knowledge fresh — `codecortex update` runs automatically on every commit, re-extracting changed files and updating temporal analysis.
 
-vs. raw scan of entire codebase:    ~37,800 tokens
-```
-
-85-90% token reduction. 7-10x efficiency gain.
+**Size-adaptive responses** — CodeCortex classifies your project (micro → extra-large) and adjusts response caps accordingly. A 23-file project gets full detail. A 6,400-file project gets intelligent summaries. Every MCP tool response stays under 10K chars.
 
 ## Supported Languages (27)
 

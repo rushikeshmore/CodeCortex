@@ -102,7 +102,7 @@ export async function generateStructuralModuleDocs(
 
     const analysis: ModuleAnalysis = {
       name: mod.name,
-      purpose: `${mod.files.length} files, ${mod.lines} lines (${mod.language}). Auto-generated from code structure — use \`analyze_module\` MCP tool for semantic analysis.`,
+      purpose: `${mod.files.length} files, ${mod.lines} lines (${mod.language}). Auto-generated from code structure. Updated on each commit via git hooks.`,
       dataFlow,
       publicApi: cappedExported,
       gotchas: [],

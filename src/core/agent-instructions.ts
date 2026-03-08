@@ -5,37 +5,38 @@ import { writeFile, ensureDir, cortexPath } from '../utils/files.js'
 
 const CODECORTEX_SECTION_MARKER = '## CodeCortex'
 
-export const AGENT_INSTRUCTIONS = `# CodeCortex — Codebase Knowledge Tools
+export const AGENT_INSTRUCTIONS = `# CodeCortex — Codebase Navigation & Risk Tools
 
-This project uses CodeCortex for persistent codebase knowledge. These MCP tools give you pre-analyzed context — prefer them over raw Read/Grep/Glob.
+This project uses CodeCortex. It gives you a pre-built map of the codebase — architecture, dependencies, risk areas, hidden coupling. Use it to navigate to the right files, then read those files with your normal tools.
 
-## Orientation (start here)
+**CodeCortex finds WHERE to look. You still read the code.**
+
+## Navigation (start here)
 - \`get_project_overview\` — architecture, modules, risk map. Call this first.
-- \`search_knowledge\` — search functions, types, files, and docs by keyword. Faster than grep for concepts.
-
-## Before Editing (ALWAYS call these)
-- \`get_edit_briefing\` — co-change risks, hidden dependencies, bug history for files you plan to edit.
-- \`get_change_coupling\` — files that historically change together. Missing one causes bugs.
-- \`lookup_symbol\` — find where a function/class/type is defined.
-
-## Deep Dive
-- \`get_module_context\` — purpose, API, gotchas, and dependencies of a specific module.
+- \`search_knowledge\` — find where a function/class/type is DEFINED by name. Ranked results: exported definitions first. NOT for content search — use grep for that.
+- \`lookup_symbol\` — precise symbol lookup with kind + file path filters. Use when you know exactly what you're looking for (e.g., "all interfaces in gateway/").
+- \`get_module_context\` — what files, symbols, and deps are in a specific module.
 - \`get_dependency_graph\` — import/export graph filtered by file or module.
-- \`get_hotspots\` — files ranked by risk (churn + coupling + bugs).
-- \`get_decision_history\` — architectural decisions and their rationale.
 - \`get_session_briefing\` — what changed since the last session.
 
+## When to use grep instead
+- "How does X work?" → grep (searches file contents)
+- "Find all usage of X" → grep (finds every occurrence)
+- "Where is X defined?" → \`search_knowledge\` or \`lookup_symbol\` (finds definitions, ranked)
+
+## Before Editing (ALWAYS call these)
+- \`get_edit_briefing\` — co-change risks, hidden dependencies, bug history for files you plan to edit. Prevents bugs from files that secretly change together.
+- \`get_change_coupling\` — files that historically change together. Missing one causes bugs.
+- \`get_hotspots\` — files ranked by risk (churn + coupling + bugs).
+
 ## Response Detail Control
-These tools accept a \`detail\` parameter (\`"brief"\` or \`"full"\`): \`get_module_context\`, \`get_dependency_graph\`, \`get_decision_history\`, \`lookup_symbol\`, \`get_change_coupling\`, \`search_knowledge\`, \`get_edit_briefing\`.
-- **brief** (default) — size-adaptive caps. Small projects show more, large projects truncate aggressively. Best for exploration.
-- **full** — returns complete data up to hard safety limits. Use when you need exhaustive info for a specific analysis.
-Only use \`detail: "full"\` when brief results are insufficient — it increases response size significantly on large codebases.
+Most tools accept \`detail: "brief"\` (default) or \`"full"\`. Use brief for exploration, full only when you need exhaustive data.
 
 ## Building Knowledge (call as you work)
 - \`record_decision\` — when you make a non-obvious technical choice, record WHY.
 - \`update_patterns\` — when you discover a coding convention, document it.
-- \`analyze_module\` + \`save_module_analysis\` — deep-analyze a module's purpose and API.
-- \`report_feedback\` — if any CodeCortex knowledge is wrong or outdated, report it.
+- \`record_observation\` — record anything you learned (gotchas, undocumented deps, env requirements).
+- \`get_decision_history\` — check what decisions were already made and why.
 `
 
 const CLAUDEMD_POINTER = `

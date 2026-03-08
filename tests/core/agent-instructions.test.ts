@@ -115,7 +115,7 @@ describe('generateAgentInstructions', () => {
       'get_change_coupling', 'lookup_symbol', 'get_module_context',
       'get_dependency_graph', 'get_hotspots', 'get_decision_history',
       'get_session_briefing', 'record_decision', 'update_patterns',
-      'analyze_module', 'save_module_analysis', 'report_feedback',
+      'record_observation',
     ]
     for (const tool of expectedTools) {
       expect(agentMd).toContain(tool)
