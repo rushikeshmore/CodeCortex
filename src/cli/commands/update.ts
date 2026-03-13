@@ -16,6 +16,8 @@ import { generateConstitution } from '../../core/constitution.js'
 import { createSession, writeSession, getLatestSession } from '../../core/sessions.js'
 import { readFile as fsRead } from 'node:fs/promises'
 import { generateStructuralModuleDocs } from '../../core/module-gen.js'
+import { generateHotspotsMarkdown } from '../../git/temporal.js'
+import { injectAllAgentFiles } from '../../core/context-injection.js'
 import type { SymbolRecord, ImportEdge, CallEdge, SymbolIndex } from '../../types/index.js'
 
 export async function updateCommand(opts: { root: string; days: string }): Promise<void> {
@@ -100,6 +102,7 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
   await writeGraph(root, graph)
   if (temporalData) {
     await writeFile(cortexPath(root, 'temporal.json'), JSON.stringify(temporalData, null, 2))
+    await writeFile(cortexPath(root, 'hotspots.md'), generateHotspotsMarkdown(temporalData))
   }
 
   // Generate structural module docs (skip existing)
@@ -124,6 +127,9 @@ export async function updateCommand(opts: { root: string; days: string }): Promi
     externalDeps,
     temporal: temporalData,
   })
+
+  // Refresh inline context in agent config files
+  await injectAllAgentFiles(root)
 
   // Create session log
   const diff = await getUncommittedDiff(root).catch(() => ({ filesChanged: [], summary: 'no changes' }))

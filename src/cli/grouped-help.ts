@@ -1,7 +1,7 @@
 import type { Command, Help } from 'commander'
 
 const COMMAND_GROUPS: Array<{ title: string; commands: string[] }> = [
-  { title: 'Core',    commands: ['init', 'serve', 'update', 'status'] },
+  { title: 'Core',    commands: ['init', 'serve', 'update', 'inject', 'status'] },
   { title: 'Query',   commands: ['symbols', 'search', 'modules', 'hotspots'] },
   { title: 'Utility', commands: ['hook', 'upgrade'] },
 ]

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtemp, rm, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { existsSync } from 'node:fs'
 import { generateAgentInstructions, AGENT_INSTRUCTIONS } from '../../src/core/agent-instructions.js'
 
 let root: string
@@ -24,15 +23,17 @@ describe('generateAgentInstructions', () => {
     expect(agentMd).toBe(AGENT_INSTRUCTIONS)
   })
 
-  it('creates CLAUDE.md with pointer when none exists', async () => {
+  it('creates CLAUDE.md with inline context when none exists', async () => {
     await generateAgentInstructions(root)
 
     const claudeMd = await readFile(join(root, 'CLAUDE.md'), 'utf-8')
     expect(claudeMd).toContain('## CodeCortex')
-    expect(claudeMd).toContain('.codecortex/AGENT.md')
+    expect(claudeMd).toContain('<!-- codecortex:start -->')
+    expect(claudeMd).toContain('<!-- codecortex:end -->')
+    expect(claudeMd).toContain('get_edit_briefing')
   })
 
-  it('appends pointer to existing CLAUDE.md', async () => {
+  it('appends inline context to existing CLAUDE.md', async () => {
     await writeFile(join(root, 'CLAUDE.md'), '# My Project\n\nSome instructions.\n', 'utf-8')
 
     await generateAgentInstructions(root)
@@ -40,8 +41,8 @@ describe('generateAgentInstructions', () => {
     const claudeMd = await readFile(join(root, 'CLAUDE.md'), 'utf-8')
     expect(claudeMd).toContain('# My Project')
     expect(claudeMd).toContain('Some instructions.')
-    expect(claudeMd).toContain('## CodeCortex')
-    expect(claudeMd).toContain('.codecortex/AGENT.md')
+    expect(claudeMd).toContain('<!-- codecortex:start -->')
+    expect(claudeMd).toContain('get_edit_briefing')
   })
 
   it('is idempotent — does not duplicate on re-run', async () => {
@@ -103,22 +104,30 @@ describe('generateAgentInstructions', () => {
     expect(updated).toContain('AGENT.md')
     expect(updated).toContain('.cursorrules')
     expect(updated).toContain('AGENTS.md')
-    // CLAUDE.md also exists since it gets created as default? No — .cursorrules exists so CLAUDE.md only if it exists
   })
 
-  it('AGENT.md contains all tool names', async () => {
+  it('AGENT.md contains the 5 kept tool names', async () => {
     await generateAgentInstructions(root)
 
     const agentMd = await readFile(join(root, '.codecortex', 'AGENT.md'), 'utf-8')
     const expectedTools = [
-      'get_project_overview', 'search_knowledge', 'get_edit_briefing',
-      'get_change_coupling', 'lookup_symbol', 'get_module_context',
-      'get_dependency_graph', 'get_hotspots', 'get_decision_history',
-      'get_session_briefing', 'record_decision', 'update_patterns',
-      'record_observation',
+      'get_project_overview', 'get_edit_briefing',
+      'get_change_coupling', 'lookup_symbol',
+      'get_dependency_graph',
     ]
     for (const tool of expectedTools) {
       expect(agentMd).toContain(tool)
+    }
+
+    // Dropped tools should NOT be in AGENT.md
+    const droppedTools = [
+      'search_knowledge', 'get_module_context',
+      'get_hotspots', 'get_decision_history',
+      'get_session_briefing', 'record_decision',
+      'update_patterns', 'record_observation',
+    ]
+    for (const tool of droppedTools) {
+      expect(agentMd).not.toContain(tool)
     }
   })
 })

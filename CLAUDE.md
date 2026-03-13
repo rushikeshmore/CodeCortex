@@ -6,7 +6,7 @@ Persistent codebase knowledge layer for AI agents. Pre-builds architecture, depe
 - TypeScript, ESM (`"type": "module"`)
 - tree-sitter (native N-API) + 27 language grammar packages
 - @modelcontextprotocol/sdk - MCP server (stdio transport)
-- commander - CLI (init, serve, update, status, symbols, search, modules, hotspots, hook, upgrade)
+- commander - CLI (init, serve, update, inject, status, symbols, search, modules, hotspots, hook, upgrade)
 - simple-git - git integration + temporal analysis
 - zod - schema validation for LLM analysis results
 - yaml - cortex.yaml manifest
@@ -45,16 +45,25 @@ Hybrid extraction:
 - `codecortex symbols [query]` - browse and filter the symbol index
 - `codecortex search <query>` - search across all knowledge files
 - `codecortex modules [name]` - list modules or deep-dive into one
+- `codecortex inject` - regenerate inline context in CLAUDE.md and agent config files
 - `codecortex hotspots` - files ranked by risk (churn + coupling + bugs)
 - `codecortex hook install|uninstall|status` - manage git hooks for auto-update
 - `codecortex upgrade` - check for and install latest version
 
-## MCP Tools (13)
-Read (10): get_project_overview, get_module_context, get_session_briefing, search_knowledge, get_decision_history, get_dependency_graph, lookup_symbol, get_change_coupling, get_hotspots, get_edit_briefing
-Write (3): record_decision, update_patterns, record_observation
+## MCP Tools (5)
+get_project_overview, get_dependency_graph, lookup_symbol, get_change_coupling, get_edit_briefing
 
-All read tools include `_freshness` metadata (status, lastAnalyzed, filesChangedSince, changedFiles, message).
-All read tools return context-safe responses (<10K chars) via truncation utilities in `src/utils/truncate.ts`.
+## MCP Resources (3)
+- `codecortex://project/overview` — constitution (architecture, risk map)
+- `codecortex://project/hotspots` — risk-ranked files
+- `codecortex://module/{name}` — module documentation (template)
+
+## MCP Prompts (2)
+- `start_session` — constitution + latest session for context
+- `before_editing` — risk assessment for files you plan to edit
+
+All tools include `_freshness` metadata (status, lastAnalyzed, filesChangedSince, changedFiles, message).
+All tools return context-safe responses (<10K chars) via truncation utilities in `src/utils/truncate.ts`.
 
 ## Pre-Publish Checklist
 Run ALL of these before `npm publish`. Do not skip any step.
@@ -72,7 +81,7 @@ Run ALL of these before `npm publish`. Do not skip any step.
 - **Grammar smoke test** (`parser.test.ts`): Loads every language in `LANGUAGE_LOADERS` via `parseSource()`. Catches missing packages, broken native builds, wrong require paths. This is what would have caught the tree-sitter-liquid issue.
 - **Version-check tests**: Update notification, cache lifecycle, PM detection, upgrade commands.
 - **Hook tests**: Git hook install/uninstall/status integration tests.
-- **MCP tests**: All 13 tools (read + write), simulation tests.
+- **MCP tests**: All 5 tools, resources, prompts, simulation tests.
 
 ### Known limitations
 - tree-sitter native bindings don't compile on Node 24 yet (upstream issue)
@@ -91,7 +100,7 @@ Run ALL of these before `npm publish`. Do not skip any step.
 src/
   cli/           - commander CLI (init, serve, update, status)
   mcp/           - MCP server + tools
-  core/          - knowledge store (graph, modules, decisions, sessions, patterns, constitution, search, agent-instructions, freshness)
+  core/          - knowledge store (graph, modules, decisions, sessions, patterns, constitution, search, agent-instructions, context-injection, freshness)
   extraction/    - tree-sitter native N-API (parser, symbols, imports, calls)
   git/           - git diff, history, temporal analysis
   types/         - TypeScript types + Zod schemas

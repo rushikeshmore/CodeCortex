@@ -14,6 +14,7 @@ import { writeFile, writeJsonStream, ensureDir, cortexPath } from '../../utils/f
 import { readFile } from 'node:fs/promises'
 import { generateStructuralModuleDocs } from '../../core/module-gen.js'
 import { generateAgentInstructions } from '../../core/agent-instructions.js'
+import { generateHotspotsMarkdown } from '../../git/temporal.js'
 import { createDecision, writeDecision, listDecisions } from '../../core/decisions.js'
 import type { SymbolRecord, ImportEdge, CallEdge, SymbolIndex, ProjectInfo } from '../../types/index.js'
 
@@ -40,6 +41,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   const allImports: ImportEdge[] = []
   const allCalls: CallEdge[] = []
   let extractionErrors = 0
+  const langStats = new Map<string, { files: number; symbols: number }>()
 
   let parsed = 0
   const parseable = project.files.filter(f => languageFromPath(f.path)).length
@@ -49,6 +51,9 @@ export async function initCommand(opts: { root: string; days: string }): Promise
     const lang = languageFromPath(file.path)
     if (!lang) continue
 
+    const stats = langStats.get(lang) || { files: 0, symbols: 0 }
+    stats.files++
+
     try {
       const tree = await parseFile(file.absolutePath, lang)
       const source = await readFile(file.absolutePath, 'utf-8')
@@ -57,12 +62,14 @@ export async function initCommand(opts: { root: string; days: string }): Promise
       const imports = extractImports(tree, file.path, lang)
       const calls = extractCalls(tree, file.path, lang)
 
+      stats.symbols += symbols.length
       allSymbols.push(...symbols)
       allImports.push(...imports)
       allCalls.push(...calls)
     } catch {
       extractionErrors++
     }
+    langStats.set(lang, stats)
     parsed++
     if (showProgress && parsed % 5000 === 0) {
       process.stdout.write(`\r  Progress: ${parsed}/${parseable} files (${allSymbols.length} symbols)`)
@@ -73,6 +80,13 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log(`  Extracted ${allSymbols.length} symbols, ${allImports.length} imports, ${allCalls.length} call edges`)
   if (extractionErrors > 0) {
     console.log(`  (${extractionErrors} files skipped due to parse errors)`)
+  }
+
+  // Warn about languages with 0 symbols extracted
+  for (const [lang, stats] of langStats) {
+    if (stats.files > 0 && stats.symbols === 0) {
+      console.log(`  \u26a0 Warning: ${lang} \u2014 ${stats.files} files parsed, 0 symbols extracted. Grammar may not support this language.`)
+    }
   }
   console.log('')
 
@@ -140,9 +154,10 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   // Write graph.json
   await writeGraph(root, graph)
 
-  // Write temporal.json
+  // Write temporal.json + hotspots.md
   if (temporalData) {
     await writeFile(cortexPath(root, 'temporal.json'), JSON.stringify(temporalData, null, 2))
+    await writeFile(cortexPath(root, 'hotspots.md'), generateHotspotsMarkdown(temporalData))
   }
 
   // Write overview.md — compact summary only (no raw file listing)
@@ -162,7 +177,7 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   await writeManifest(root, manifest)
 
   // Write patterns.md (empty template)
-  await writeFile(cortexPath(root, 'patterns.md'), '# Coding Patterns\n\nNo patterns recorded yet. Use `update_patterns` to add patterns.\n')
+  await writeFile(cortexPath(root, 'patterns.md'), '# Coding Patterns\n\nNo patterns recorded yet. Edit this file directly to add patterns.\n')
 
   // Generate structural module docs
   const moduleDocsGenerated = await generateStructuralModuleDocs(root, {
@@ -185,8 +200,8 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   console.log('  Written: constitution.md')
   console.log('')
 
-  // Step 7: Agent onboarding
-  console.log('Step 7/7: Generating agent instructions...')
+  // Step 7: Agent onboarding + inline context injection
+  console.log('Step 7/7: Generating inline context...')
   const updatedFiles = await generateAgentInstructions(root)
 
   // Seed a starter decision (skip if decisions already exist)

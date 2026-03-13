@@ -2,12 +2,8 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { readFile, cortexPath } from '../../utils/files.js'
 import { readGraph, getModuleDependencies, getMostImportedFiles, getFileImporters } from '../../core/graph.js'
-import { readModuleDoc, listModuleDocs } from '../../core/modules.js'
-import { listSessions, readSession, getLatestSession } from '../../core/sessions.js'
-import { listDecisions, readDecision } from '../../core/decisions.js'
-import { searchKnowledge } from '../../core/search.js'
 import { computeFreshness } from '../../core/freshness.js'
-import { capString, truncateArray } from '../../utils/truncate.js'
+import { truncateArray } from '../../utils/truncate.js'
 import { readManifest } from '../../core/manifest.js'
 import { getSizeLimits, type SizeLimits, type DetailLevel } from '../../core/project-size.js'
 import type { TemporalData, SymbolIndex, FreshnessInfo } from '../../types/index.js'
@@ -81,159 +77,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
     }
   )
 
-  // --- Tool 2: get_module_context ---
-  server.registerTool(
-    'get_module_context',
-    {
-      description: 'Get deep context for a specific module: purpose, data flow, public API, gotchas, dependencies, and temporal signals (churn, coupling, bug history). Use after get_project_overview when you need to work on a specific module.',
-      inputSchema: {
-        name: z.string().describe('Module name (e.g., "scoring", "api", "indexer")'),
-        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data (use only when you need exhaustive info).'),
-      },
-    },
-    async ({ name, detail }) => {
-      const limits = await getLimits(detail)
-      const doc = await readModuleDoc(projectRoot, name)
-      if (!doc) {
-        const available = await listModuleDocs(projectRoot)
-        return textResult({ found: false, name, available, message: `Module "${name}" not found. Available modules: ${available.join(', ')}` })
-      }
-
-      const cappedDoc = capString(doc, limits.moduleDocCap)
-
-      const graph = await readGraph(projectRoot)
-      let depSummary = null
-      if (graph) {
-        const deps = getModuleDependencies(graph, name)
-
-        const importsFrom = new Set<string>()
-        const importedBy = new Set<string>()
-        const externalDeps = new Set<string>()
-
-        for (const edge of deps.imports) {
-          const targetMod = graph.modules.find(m => m.files.includes(edge.target))
-          if (targetMod && targetMod.name !== name) importsFrom.add(targetMod.name)
-          if (!edge.target.startsWith('.') && !edge.target.startsWith('/')) {
-            externalDeps.add(edge.target)
-          }
-        }
-        for (const edge of deps.importedBy) {
-          const sourceMod = graph.modules.find(m => m.files.includes(edge.source))
-          if (sourceMod && sourceMod.name !== name) importedBy.add(sourceMod.name)
-        }
-
-        const modFiles = new Set(graph.modules.find(m => m.name === name)?.files ?? [])
-        for (const [pkg, files] of Object.entries(graph.externalDeps)) {
-          if (files.some(f => modFiles.has(f))) externalDeps.add(pkg)
-        }
-
-        const extDepsArr = [...externalDeps]
-        const importsFromArr = [...importsFrom]
-        const importedByArr = [...importedBy]
-        depSummary = {
-          importsFrom: importsFromArr.slice(0, limits.depModuleNameCap),
-          importedBy: importedByArr.slice(0, limits.depModuleNameCap),
-          totalImportsFrom: importsFromArr.length,
-          totalImportedBy: importedByArr.length,
-          externalDeps: extDepsArr.slice(0, limits.depExternalCap),
-          totalExternalDeps: extDepsArr.length,
-        }
-      }
-
-      const freshness = await getFreshness()
-
-      return textResult(withFreshness({ found: true, name, doc: cappedDoc, dependencies: depSummary }, freshness))
-    }
-  )
-
-  // --- Tool 3: get_session_briefing ---
-  server.registerTool(
-    'get_session_briefing',
-    {
-      description: 'Get a briefing of what changed since the last session. Shows files changed, modules affected, and decisions recorded. Use at the start of a new session to catch up.',
-      inputSchema: {},
-    },
-    async () => {
-      const latestId = await getLatestSession(projectRoot)
-      if (!latestId) {
-        return textResult({ hasSession: false, message: 'No previous sessions recorded.' })
-      }
-
-      const session = await readSession(projectRoot, latestId)
-      const allSessions = await listSessions(projectRoot)
-      const freshness = await getFreshness()
-
-      return textResult(withFreshness({
-        hasSession: true,
-        latest: session,
-        totalSessions: allSessions.length,
-        recentSessionIds: allSessions.slice(0, (await getLimits()).sessionsCap),
-      }, freshness))
-    }
-  )
-
-  // --- Tool 4: search_knowledge ---
-  server.registerTool(
-    'search_knowledge',
-    {
-      description: 'Find where a function, class, type, or file is DEFINED. Returns ranked results: exported definitions first, local vars demoted. For content/concept search ("how does X work?"), use grep instead — this tool searches symbol names, not file contents.',
-      inputSchema: {
-        query: z.string().describe('Search term or phrase (e.g., "auth", "processData", "gateway")'),
-        limit: z.number().int().min(1).max(50).optional().describe('Max results to return. Defaults to size-adaptive limit.'),
-        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns more results.'),
-      },
-    },
-    async ({ query, limit, detail }) => {
-      const limits = await getLimits(detail)
-      const effectiveLimit = limit ?? limits.searchDefaultLimit
-      const results = await searchKnowledge(projectRoot, query, effectiveLimit)
-      const freshness = await getFreshness()
-
-      return textResult(withFreshness({
-        query,
-        totalResults: results.length,
-        results,
-      }, freshness))
-    }
-  )
-
-  // --- Tool 5: get_decision_history ---
-  server.registerTool(
-    'get_decision_history',
-    {
-      description: 'Get architectural decision records. Shows WHY the codebase is built the way it is. Filter by topic keyword.',
-      inputSchema: {
-        topic: z.string().optional().describe('Optional keyword to filter decisions'),
-        detail: z.enum(['brief', 'full']).default('brief').describe('Response detail level. "brief" (default) uses size-adaptive caps. "full" returns complete data.'),
-      },
-    },
-    async ({ topic, detail }) => {
-      const limits = await getLimits(detail)
-      const ids = await listDecisions(projectRoot)
-      const decisions: string[] = []
-
-      for (const id of ids) {
-        const content = await readDecision(projectRoot, id)
-        if (content) {
-          if (!topic || content.toLowerCase().includes(topic.toLowerCase())) {
-            decisions.push(capString(content, limits.decisionCharCap))
-          }
-        }
-      }
-
-      const capped = truncateArray(decisions, limits.decisionCap, 'decisions')
-      const freshness = await getFreshness()
-
-      return textResult(withFreshness({
-        total: capped.total,
-        topic: topic || 'all',
-        decisions: capped.items,
-        ...(capped.truncated ? { truncated: capped.message } : {}),
-      }, freshness))
-    }
-  )
-
-  // --- Tool 6: get_dependency_graph ---
+  // --- Tool 2: get_dependency_graph ---
   server.registerTool(
     'get_dependency_graph',
     {
@@ -292,7 +136,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
     }
   )
 
-  // --- Tool 7: lookup_symbol ---
+  // --- Tool 3: lookup_symbol ---
   server.registerTool(
     'lookup_symbol',
     {
@@ -326,7 +170,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
     }
   )
 
-  // --- Tool 8: get_change_coupling ---
+  // --- Tool 4: get_change_coupling ---
   server.registerTool(
     'get_change_coupling',
     {
@@ -367,60 +211,7 @@ export function registerReadTools(server: McpServer, projectRoot: string): void 
     }
   )
 
-  // --- Tool 9: get_hotspots ---
-  server.registerTool(
-    'get_hotspots',
-    {
-      description: 'Get files ranked by risk: change frequency (churn), coupling count, and bug history. Volatile files with many couplings need extra care when editing.',
-      inputSchema: {
-        limit: z.number().int().min(1).max(50).default(10).describe('Number of files to return'),
-      },
-    },
-    async ({ limit }) => {
-      const content = await readFile(cortexPath(projectRoot, 'temporal.json'))
-      if (!content) return textResult({ found: false, message: 'No temporal data. Run codecortex init first.' })
-
-      const temporal: TemporalData = JSON.parse(content)
-
-      // Calculate risk score: churn + coupling count + bug count
-      const riskMap = new Map<string, { churn: number; couplings: number; bugs: number; risk: number }>()
-
-      for (const h of temporal.hotspots) {
-        riskMap.set(h.file, { churn: h.changes, couplings: 0, bugs: 0, risk: h.changes })
-      }
-
-      for (const c of temporal.coupling) {
-        for (const f of [c.fileA, c.fileB]) {
-          const entry = riskMap.get(f) || { churn: 0, couplings: 0, bugs: 0, risk: 0 }
-          entry.couplings++
-          entry.risk += c.strength * 2
-          riskMap.set(f, entry)
-        }
-      }
-
-      for (const b of temporal.bugHistory) {
-        const entry = riskMap.get(b.file) || { churn: 0, couplings: 0, bugs: 0, risk: 0 }
-        entry.bugs = b.fixCommits
-        entry.risk += b.fixCommits * 3
-        riskMap.set(b.file, entry)
-      }
-
-      const ranked = [...riskMap.entries()]
-        .sort((a, b) => b[1].risk - a[1].risk)
-        .slice(0, limit)
-        .map(([file, data]) => ({ file, ...data, risk: Math.round(data.risk * 100) / 100 }))
-
-      const freshness = await getFreshness()
-
-      return textResult(withFreshness({
-        period: `${temporal.periodDays} days`,
-        totalCommits: temporal.totalCommits,
-        hotspots: ranked,
-      }, freshness))
-    }
-  )
-
-  // --- Tool 10: get_edit_briefing ---
+  // --- Tool 5: get_edit_briefing ---
   server.registerTool(
     'get_edit_briefing',
     {

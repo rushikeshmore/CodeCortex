@@ -22,7 +22,7 @@ Every AI coding session starts with exploration — grepping, reading wrong file
 
 ## The Solution
 
-CodeCortex eliminates the cold start. It pre-builds codebase knowledge — architecture, dependencies, risk areas, hidden coupling — so agents skip the exploration phase and go straight to the right files.
+CodeCortex eliminates the cold start. It pre-builds codebase knowledge — architecture, dependencies, risk areas, hidden coupling — and injects it directly into your agent's context (CLAUDE.md, .cursorrules, etc.) so agents have project knowledge from the first prompt.
 
 **Not a middleware. Not a proxy. Just knowledge your agent loads on day one.**
 
@@ -43,7 +43,7 @@ Three capabilities no other tool provides:
 
 2. **Risk scores** — File X has been bug-fixed 7 times, has 6 hidden dependencies, and co-changes with 3 other files. Risk score: 35. You can't learn this from reading code.
 
-3. **Cross-session memory** — Decisions, patterns, observations persist. The agent doesn't start from zero each session.
+3. **Inline context injection** — Project knowledge is injected directly into CLAUDE.md, .cursorrules, and other agent config files with architecture, risk map, and editing directives. Agents use it without any setup.
 
 **Example from a real codebase:**
 - `schema.help.ts` and `schema.labels.ts` co-changed in 12/14 commits (86%) with **zero imports between them**
@@ -61,8 +61,8 @@ npm install -g codecortex-ai --legacy-peer-deps
 cd /path/to/your-project
 codecortex init
 
-# Check knowledge freshness
-codecortex status
+# Regenerate inline context in CLAUDE.md and agent config files
+codecortex inject
 ```
 
 ### Connect to Claude Code
@@ -101,7 +101,7 @@ Add to `.cursor/mcp.json`:
 
 ## What Gets Generated
 
-All knowledge lives in `.codecortex/` as flat files in your repo:
+All knowledge lives in `.codecortex/` as flat files in your repo, plus inline context is injected into agent config files:
 
 ```
 .codecortex/
@@ -111,11 +111,16 @@ All knowledge lives in `.codecortex/` as flat files in your repo:
   graph.json           # dependency graph (imports, calls, modules)
   symbols.json         # full symbol index (functions, classes, types...)
   temporal.json        # git coupling, hotspots, bug history
+  hotspots.md          # risk-ranked files (static, always available)
   AGENT.md             # tool usage guide for AI agents
   modules/*.md         # per-module structural analysis
   decisions/*.md       # architectural decision records
   sessions/*.md        # session change logs
   patterns.md          # coding patterns and conventions
+
+CLAUDE.md              # ← inline context injected here
+.cursorrules           # ← and here (if exists)
+.windsurfrules         # ← and here (if exists)
 ```
 
 ## Six Knowledge Layers
@@ -129,37 +134,34 @@ All knowledge lives in `.codecortex/` as flat files in your repo:
 | 5. Patterns | How code is written here | `patterns.md` |
 | 6. Sessions | What changed between sessions | `sessions/*.md` |
 
-## MCP Tools (13)
+## MCP Tools (5)
 
-### Navigation — "Where should I look?" (4 tools)
+Five focused tools that provide capabilities agents can't get from reading code:
 
 | Tool | Description |
 |------|-------------|
 | `get_project_overview` | Architecture, modules, risk map. Call this first. |
-| `search_knowledge` | Find where a function/class/type is DEFINED by name. Ranked results. |
-| `lookup_symbol` | Precise symbol lookup with kind and file path filters. |
-| `get_module_context` | Module files, deps, temporal signals. Zoom into a module. |
-
-### Risk — "What could go wrong?" (4 tools)
-
-| Tool | Description |
-|------|-------------|
-| `get_edit_briefing` | Pre-edit risk: co-change warnings, hidden deps, bug history. **Always call before editing.** |
-| `get_hotspots` | Files ranked by risk (churn x coupling x bugs). |
-| `get_change_coupling` | Files that must change together. Hidden dependencies flagged. |
 | `get_dependency_graph` | Import/export graph filtered by module or file. |
+| `lookup_symbol` | Precise symbol lookup with kind and file path filters. |
+| `get_change_coupling` | Files that must change together. Hidden dependencies flagged. |
+| `get_edit_briefing` | Pre-edit risk: co-change warnings, hidden deps, bug history. **Always call before editing.** |
 
-### Memory — "Remember this" (5 tools)
+### MCP Resources (3)
 
-| Tool | Description |
-|------|-------------|
-| `get_session_briefing` | What changed since the last session. |
-| `get_decision_history` | Why things were built this way. |
-| `record_decision` | Save an architectural decision. |
-| `update_patterns` | Document coding conventions. |
-| `record_observation` | Record anything you learned about the codebase. |
+Static knowledge available without tool calls:
 
-All read tools include `_freshness` metadata and return context-safe responses (<10K chars) via size-adaptive caps.
+| Resource | Description |
+|----------|-------------|
+| `codecortex://project/overview` | Full project constitution |
+| `codecortex://project/hotspots` | Risk-ranked file table |
+| `codecortex://module/{name}` | Per-module documentation |
+
+### MCP Prompts (2)
+
+| Prompt | Description |
+|--------|-------------|
+| `start_session` | Returns constitution + latest session context |
+| `before_editing` | Takes file paths, returns risk/coupling/bug briefing |
 
 ## CLI Commands
 
@@ -168,6 +170,7 @@ All read tools include `_freshness` metadata and return context-safe responses (
 | `codecortex init` | Discover project + extract symbols + analyze git history |
 | `codecortex serve` | Start MCP server (stdio transport) |
 | `codecortex update` | Re-extract changed files, update affected modules |
+| `codecortex inject` | Regenerate inline context in CLAUDE.md and agent config files |
 | `codecortex status` | Show knowledge freshness, stale modules, symbol counts |
 | `codecortex symbols [query]` | Browse and filter the symbol index |
 | `codecortex search <query>` | Search across symbols, file paths, and docs |
@@ -179,6 +182,8 @@ All read tools include `_freshness` metadata and return context-safe responses (
 ## How It Works
 
 **Hybrid extraction:** tree-sitter native N-API for structure (symbols, imports, calls across 27 languages) + host LLM for semantics (what modules do, why they're built that way). Zero extra API keys.
+
+**Inline context injection:** After analysis, CodeCortex injects a rich knowledge section directly into CLAUDE.md and other agent config files. This includes architecture overview, risk map with coupled file names, and editing directives — so agents have project context from the first prompt without needing MCP.
 
 **Git hooks** keep knowledge fresh — `codecortex update` runs automatically on every commit, re-extracting changed files and updating temporal analysis.
 
