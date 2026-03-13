@@ -64,7 +64,7 @@
     "tree-sitter-swift": "^0.7.1",
     "tree-sitter-typescript": "^0.23.2",
     "tree-sitter-vue": "^0.2.1",
-    "tree-sitter-zig": "^0.1.0",
+    "tree-sitter-zig": "^0.2.0",
     "yaml": "^2.7.0",
     "zod": "^3.24.0"
   },
