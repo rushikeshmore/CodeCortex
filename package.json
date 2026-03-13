@@ -34,7 +34,7 @@
   "homepage": "https://codecortex-ai.vercel.app",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "commander": "^13.0.0",
+    "commander": "^14.0.3",
     "glob": "^11.0.0",
     "simple-git": "^3.27.0",
     "tree-sitter": "^0.25.0",
