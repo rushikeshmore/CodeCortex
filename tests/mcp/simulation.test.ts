@@ -22,7 +22,6 @@ import { readModuleDoc, writeModuleDoc, listModuleDocs } from '../../src/core/mo
 import { writeDecision, createDecision, listDecisions, readDecision } from '../../src/core/decisions.js'
 import { writeSession, createSession, listSessions, readSession, getLatestSession } from '../../src/core/sessions.js'
 import { addPattern, readPatterns } from '../../src/core/patterns.js'
-import { searchKnowledge } from '../../src/core/search.js'
 import type { TemporalData, SymbolIndex, DependencyGraph, ModuleAnalysis } from '../../src/types/index.js'
 
 let fixture: Fixture
@@ -77,12 +76,12 @@ describe('Persona 1: New Agent — codebase discovery', () => {
     expect(graphSummary.mostImported[0]!.file).toBe('src/core/types.ts')
   })
 
-  it('Step 2: picks "core" module and calls get_module_context', async () => {
+  it('Step 2: picks "core" module and reads module doc + graph deps', async () => {
     // Agent picks the first module from the graph
     const targetModule = graph.modules[0]!.name
     expect(targetModule).toBe('core')
 
-    // Tool: get_module_context
+    // Agent reads .codecortex/modules/core.md directly (no MCP tool needed)
     const doc = await readModuleDoc(fixture.root, targetModule)
     const deps = getModuleDependencies(graph, targetModule)
 
@@ -127,8 +126,8 @@ describe('Persona 1: New Agent — codebase discovery', () => {
 describe('Persona 2: Bug Fixer — risk-focused investigation', () => {
   let temporal: TemporalData
 
-  it('Step 1: calls get_hotspots to find risky files', async () => {
-    // Tool: get_hotspots { limit: 5 }
+  it('Step 1: reads hotspots.md to find risky files', async () => {
+    // Agent reads .codecortex/hotspots.md directly (static file, no MCP tool)
     const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
     temporal = JSON.parse(content!)
 
@@ -189,12 +188,14 @@ describe('Persona 2: Bug Fixer — risk-focused investigation', () => {
     expect(fileSymbols[0]!.name).toBe('processData')
   })
 
-  it('Step 4: calls search_knowledge for bug-related context', async () => {
-    // Tool: search_knowledge { query: "processor" }
-    const results = await searchKnowledge(fixture.root, 'processor')
+  it('Step 4: reads constitution for project context', async () => {
+    // Agent reads constitution directly (no search_knowledge MCP tool)
+    const constitution = await readFile(cortexPath(fixture.root, 'constitution.md'))
 
-    // Agent finds references in constitution, symbols, graph
-    expect(results.length).toBeGreaterThan(0)
+    // Agent finds project knowledge in constitution
+    expect(constitution).not.toBeNull()
+    expect(constitution).toContain('Constitution')
+    expect(constitution).toContain('test-project')
   })
 })
 
@@ -280,12 +281,10 @@ describe('Persona 3: Feature Developer — write workflow', () => {
     const patterns = await readPatterns(fixture.root)
     expect(patterns).toContain('Configuration Constants')
 
-    // search_knowledge should find the new content
-    const results = await searchKnowledge(fixture.root, 'TIMEOUT')
-    expect(results.length).toBeGreaterThan(0)
-    // Should find it in both the module doc and the patterns
-    const sources = results.map(r => r.file)
-    expect(sources.some(f => f.includes('modules/'))).toBe(true)
+    // Agent reads module doc directly to verify content
+    const utilsDoc = await readModuleDoc(fixture.root, 'utils')
+    expect(utilsDoc).not.toBeNull()
+    expect(utilsDoc).toContain('TIMEOUT')
   })
 })
 
@@ -293,8 +292,8 @@ describe('Persona 3: Feature Developer — write workflow', () => {
 // Persona 4: Session Resumer — picking up after a break
 // ─────────────────────────────────────────────────────
 describe('Persona 4: Session Resumer — context recovery', () => {
-  it('Step 1: calls get_session_briefing to catch up', async () => {
-    // Tool: get_session_briefing
+  it('Step 1: reads session files directly to catch up', async () => {
+    // Agent reads .codecortex/sessions/ directly (no MCP tool)
     const latestId = await getLatestSession(fixture.root)
     expect(latestId).not.toBeNull()
 
@@ -325,11 +324,11 @@ describe('Persona 4: Session Resumer — context recovery', () => {
     expect(hidden.length).toBeGreaterThan(0)
   })
 
-  it('Step 3: calls get_hotspots to check if changed files are becoming volatile', async () => {
+  it('Step 3: reads hotspots.md to check if changed files are volatile', async () => {
     const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
     const temporal: TemporalData = JSON.parse(content!)
 
-    // Tool: get_hotspots { limit: 5 }
+    // Agent reads .codecortex/hotspots.md directly (static file)
     const processorHotspot = temporal.hotspots.find(h => h.file.includes('processor.ts'))
     expect(processorHotspot).toBeDefined()
     expect(processorHotspot!.stability).toBe('volatile')
@@ -338,18 +337,17 @@ describe('Persona 4: Session Resumer — context recovery', () => {
     // Agent notes: processor.ts is volatile with 8 changes — needs stabilization
   })
 
-  it('Step 4: calls search_knowledge for context on the race condition fix', async () => {
-    // Tool: search_knowledge { query: "race condition" }
-    // The session log mentions "race condition" — search should find the session
-    const results = await searchKnowledge(fixture.root, 'race condition')
+  it('Step 4: reads session files for context on the race condition fix', async () => {
+    // Agent reads session files directly (no search_knowledge MCP tool)
+    const latestId = await getLatestSession(fixture.root)
+    const session = await readSession(fixture.root, latestId!)
 
-    // Should find it in the session file
-    expect(results.length).toBeGreaterThan(0)
-    expect(results.some(r => r.file.includes('sessions/'))).toBe(true)
+    // Session mentions the race condition fix
+    expect(session).toContain('race condition')
   })
 
-  it('Step 5: checks decisions made since last session', async () => {
-    // Tool: get_decision_history
+  it('Step 5: reads decisions directory for recent decisions', async () => {
+    // Agent reads .codecortex/decisions/ directly (no MCP tool)
     const ids = await listDecisions(fixture.root)
 
     // Persona 3 recorded a decision — agent sees it
@@ -406,26 +404,25 @@ describe('Cross-persona: knowledge store integrity', () => {
     }
   })
 
-  it('search_knowledge finds content written by Feature Developer', async () => {
-    const results = await searchKnowledge(fixture.root, 'formatOutput')
-    expect(results.length).toBeGreaterThan(0)
-
-    // Should be discoverable in module doc, patterns, and/or constitution
-    const files = results.map(r => r.file)
-    expect(files.some(f => f.includes('modules/utils.md'))).toBe(true)
+  it('module doc written by Feature Developer is readable', async () => {
+    const doc = await readModuleDoc(fixture.root, 'utils')
+    expect(doc).not.toBeNull()
+    expect(doc).toContain('formatOutput')
   })
 
-  it('session + decision + pattern writes are all searchable', async () => {
+  it('session + decision + pattern writes are all readable', async () => {
     // Session content
-    const sessionResults = await searchKnowledge(fixture.root, 'mutex lock')
-    expect(sessionResults.length).toBeGreaterThan(0)
+    const latestId = await getLatestSession(fixture.root)
+    const session = await readSession(fixture.root, latestId!)
+    expect(session).toContain('mutex lock')
 
     // Decision content
-    const decisionResults = await searchKnowledge(fixture.root, 'flat JSON')
-    expect(decisionResults.length).toBeGreaterThan(0)
+    const decisionIds = await listDecisions(fixture.root)
+    const decision = await readDecision(fixture.root, decisionIds[0]!)
+    expect(decision).toContain('flat JSON')
 
     // Pattern content
-    const patternResults = await searchKnowledge(fixture.root, 'Configuration Constants')
-    expect(patternResults.length).toBeGreaterThan(0)
+    const patterns = await readPatterns(fixture.root)
+    expect(patterns).toContain('Configuration Constants')
   })
 })

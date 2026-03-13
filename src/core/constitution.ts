@@ -148,7 +148,7 @@ export async function generateConstitution(projectRoot: string, data?: Constitut
   }
   lines.push(
     ``,
-    `Use \`get_module_context\` to deep-dive into any module.`,
+    `Read \`.codecortex/modules/*.md\` directly for module deep-dives.`,
     `Use \`get_change_coupling\` before editing a file to check what else must change.`,
     `Use \`lookup_symbol\` to find any function, type, or class.`,
   )

@@ -1,6 +1,6 @@
 {
   "name": "codecortex-ai",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Persistent codebase knowledge layer for AI agents — architecture, dependencies, coupling, and risk served via MCP",
   "type": "module",
   "bin": {

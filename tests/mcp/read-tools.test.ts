@@ -11,10 +11,6 @@ import { createFixture, type Fixture } from '../fixtures/setup.js'
 import { readFile, cortexPath } from '../../src/utils/files.js'
 import { readManifest, updateManifest } from '../../src/core/manifest.js'
 import { readGraph, getModuleDependencies, getMostImportedFiles, getFileImporters } from '../../src/core/graph.js'
-import { readModuleDoc, listModuleDocs } from '../../src/core/modules.js'
-import { listSessions, getLatestSession } from '../../src/core/sessions.js'
-import { listDecisions } from '../../src/core/decisions.js'
-import { searchKnowledge } from '../../src/core/search.js'
 import type { TemporalData, SymbolIndex } from '../../src/types/index.js'
 
 let fixture: Fixture
@@ -92,87 +88,7 @@ describe('get_project_overview (tool 1)', () => {
   })
 })
 
-describe('get_module_context (tool 2)', () => {
-  it('returns null for modules that have no .md doc', async () => {
-    const doc = await readModuleDoc(fixture.root, 'core')
-    expect(doc).toBeNull() // No module doc created yet
-  })
-
-  it('lists available modules (empty until analysis)', async () => {
-    const available = await listModuleDocs(fixture.root)
-    expect(available).toEqual([]) // No .md files in modules/ yet
-  })
-
-  it('returns dependencies for known module', async () => {
-    const graph = await readGraph(fixture.root)
-    expect(graph).not.toBeNull()
-    const deps = getModuleDependencies(graph!, 'core')
-    expect(deps.imports.length).toBeGreaterThan(0)
-  })
-})
-
-describe('get_session_briefing (tool 3)', () => {
-  it('returns null when no sessions exist', async () => {
-    const latest = await getLatestSession(fixture.root)
-    expect(latest).toBeNull()
-  })
-
-  it('lists zero sessions', async () => {
-    const sessions = await listSessions(fixture.root)
-    expect(sessions).toHaveLength(0)
-  })
-})
-
-describe('search_knowledge (tool 4)', () => {
-  it('finds results across knowledge files', async () => {
-    const results = await searchKnowledge(fixture.root, 'typescript')
-    expect(results.length).toBeGreaterThan(0)
-  })
-
-  it('limits results to 20 (matching tool behavior)', async () => {
-    const results = await searchKnowledge(fixture.root, 'test')
-    const limited = results.slice(0, 20)
-    expect(limited.length).toBeLessThanOrEqual(20)
-  })
-
-  it('respects custom limit param', async () => {
-    const results = await searchKnowledge(fixture.root, 'process', 2)
-    expect(results.length).toBeLessThanOrEqual(2)
-  })
-
-  it('finds symbols by name with type=symbol', async () => {
-    const results = await searchKnowledge(fixture.root, 'processData')
-    const symbolResults = results.filter(r => r.type === 'symbol')
-    expect(symbolResults.length).toBeGreaterThan(0)
-    // exact(10) + function(2) + exported(1) = 13
-    expect(symbolResults[0]!.score).toBeGreaterThanOrEqual(10)
-  })
-
-  it('searchDefaultLimit exists in size limits', async () => {
-    const { getSizeLimits } = await import('../../src/core/project-size.js')
-    const micro = getSizeLimits('micro')
-    const large = getSizeLimits('large')
-    expect(micro.searchDefaultLimit).toBe(10)
-    expect(large.searchDefaultLimit).toBe(20)
-  })
-
-  it('ranks symbols higher than file paths and docs', async () => {
-    const results = await searchKnowledge(fixture.root, 'auth')
-    if (results.length >= 2) {
-      // First result should be highest scored
-      expect(results[0]!.score).toBeGreaterThanOrEqual(results[1]!.score)
-    }
-  })
-})
-
-describe('get_decision_history (tool 5)', () => {
-  it('returns empty when no decisions exist', async () => {
-    const ids = await listDecisions(fixture.root)
-    expect(ids).toHaveLength(0)
-  })
-})
-
-describe('get_dependency_graph (tool 6)', () => {
+describe('get_dependency_graph (tool 2)', () => {
   it('returns full graph when no filter', async () => {
     const graph = await readGraph(fixture.root)
     expect(graph).not.toBeNull()
@@ -222,7 +138,7 @@ describe('get_dependency_graph (tool 6)', () => {
   })
 })
 
-describe('lookup_symbol (tool 7)', () => {
+describe('lookup_symbol (tool 3)', () => {
   it('finds symbol by name', async () => {
     const content = await readFile(cortexPath(fixture.root, 'symbols.json'))
     const index: SymbolIndex = JSON.parse(content!)
@@ -251,7 +167,7 @@ describe('lookup_symbol (tool 7)', () => {
   })
 })
 
-describe('get_change_coupling (tool 8)', () => {
+describe('get_change_coupling (tool 4)', () => {
   it('reads coupling data', async () => {
     const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
     const temporal: TemporalData = JSON.parse(content!)
@@ -289,28 +205,7 @@ describe('get_change_coupling (tool 8)', () => {
   })
 })
 
-describe('get_hotspots (tool 9)', () => {
-  it('reads hotspot data sorted by changes', async () => {
-    const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
-    const temporal: TemporalData = JSON.parse(content!)
-
-    expect(temporal.hotspots).toHaveLength(2)
-    expect(temporal.hotspots[0]!.file).toContain('processor.ts')
-    expect(temporal.hotspots[0]!.changes).toBe(8)
-    expect(temporal.hotspots[0]!.stability).toBe('volatile')
-  })
-
-  it('includes bug history', async () => {
-    const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
-    const temporal: TemporalData = JSON.parse(content!)
-
-    expect(temporal.bugHistory).toHaveLength(1)
-    expect(temporal.bugHistory[0]!.fixCommits).toBe(3)
-    expect(temporal.bugHistory[0]!.lessons).toHaveLength(2)
-  })
-})
-
-describe('get_edit_briefing (tool 10)', () => {
+describe('get_edit_briefing (tool 5)', () => {
   it('returns risk assessment for a volatile file', async () => {
     const content = await readFile(cortexPath(fixture.root, 'temporal.json'))
     const temporal: TemporalData = JSON.parse(content!)

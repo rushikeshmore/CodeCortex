@@ -22,17 +22,19 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { registerReadTools } from './tools/read.js'
-import { registerWriteTools } from './tools/write.js'
+import { registerResources } from './resources.js'
+import { registerPrompts } from './prompts.js'
 
 export function createServer(projectRoot: string): McpServer {
   const server = new McpServer({
     name: 'codecortex',
-    version: '0.5.0',
-    description: 'Persistent codebase knowledge layer for AI agents. Architecture, dependencies, coupling, risk, and cross-session memory.',
+    version: '0.6.0',
+    description: '5 tools for codebase navigation, risk assessment, and editing safety. Architecture, dependencies, coupling, and hidden dependency detection.',
   })
 
   registerReadTools(server, projectRoot)
-  registerWriteTools(server, projectRoot)
+  registerResources(server, projectRoot)
+  registerPrompts(server, projectRoot)
 
   return server
 }

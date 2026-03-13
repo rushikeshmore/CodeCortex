@@ -5,6 +5,7 @@ import { Command } from 'commander'
 import { initCommand } from './commands/init.js'
 import { serveCommand } from './commands/serve.js'
 import { updateCommand } from './commands/update.js'
+import { injectCommand } from './commands/inject.js'
 import { statusCommand } from './commands/status.js'
 import { symbolsCommand } from './commands/symbols.js'
 import { searchCommand } from './commands/search.js'
@@ -50,6 +51,12 @@ program
   .option('-r, --root <path>', 'Project root directory', process.cwd())
   .option('-d, --days <number>', 'Days of git history to re-analyze', '90')
   .action(updateCommand)
+
+program
+  .command('inject')
+  .description('Regenerate inline context in CLAUDE.md and agent config files')
+  .option('-r, --root <path>', 'Project root directory', process.cwd())
+  .action(injectCommand)
 
 program
   .command('status')
