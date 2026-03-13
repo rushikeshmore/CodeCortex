@@ -2,7 +2,7 @@
  * CodeCortex MCP Server
  *
  * Serves codebase knowledge to AI agents via Model Context Protocol.
- * 13 tools: 8 read + 5 write (navigation, risk, memory).
+ * 5 tools + 3 resources + 2 prompts for navigation, risk, and editing safety.
  *
  * Usage:
  *   codecortex serve
