@@ -99,6 +99,10 @@ Add to `.cursor/mcp.json`:
 }
 ```
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/rushikeshmore-codecortex).
+
 ## What Gets Generated
 
 All knowledge lives in `.codecortex/` as flat files in your repo, plus inline context is injected into agent config files:
