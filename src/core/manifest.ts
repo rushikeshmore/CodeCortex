@@ -16,7 +16,6 @@ export async function writeManifest(projectRoot: string, manifest: CortexManifes
 
 export function createManifest(opts: {
   project: string
-  root: string
   languages: string[]
   totalFiles: number
   totalSymbols: number
@@ -26,7 +25,6 @@ export function createManifest(opts: {
   return {
     version: '1.0.0',
     project: opts.project,
-    root: opts.root,
     generated: now,
     lastUpdated: now,
     languages: opts.languages,

@@ -25,7 +25,6 @@ export async function createFixture(): Promise<Fixture> {
   // cortex.yaml
   await writeFile(join(cortex, 'cortex.yaml'), `version: 1.0.0
 project: test-project
-root: ${root}
 generated: 2026-03-02T00:00:00.000Z
 lastUpdated: 2026-03-02T00:00:00.000Z
 languages:

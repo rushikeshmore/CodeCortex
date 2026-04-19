@@ -138,7 +138,6 @@ export type { ProjectSize } from '../core/project-size.js'
 export interface CortexManifest {
   version: string
   project: string
-  root: string
   generated: string
   lastUpdated: string
   languages: string[]

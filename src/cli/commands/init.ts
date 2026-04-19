@@ -168,7 +168,6 @@ export async function initCommand(opts: { root: string; days: string }): Promise
   // Write manifest
   const manifest = createManifest({
     project: project.name,
-    root,
     languages: project.languages,
     totalFiles: project.files.length,
     totalSymbols: allSymbols.length,
