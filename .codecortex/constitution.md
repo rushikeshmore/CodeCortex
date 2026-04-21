@@ -5,60 +5,60 @@
 ## Project
 - **Name:** codecortex-ai
 - **Languages:** typescript
-- **Files:** 57
-- **Symbols:** 1313
+- **Files:** 70
+- **Symbols:** 1549
 - **Modules:** 7
-- **Last updated:** 2026-03-07T20:43:20.651Z
+- **Last updated:** 2026-04-21T10:10:23.420Z
 
 ## Architecture
 
 **Entry points:** `dist/cli/index.js`
 
-**Modules:**
-- **cli** (13 files, 1569 lines) — typescript
-- **core** (11 files, 974 lines) — typescript
+**Modules (7):**
+- **cli** (14 files, 1661 lines) — typescript
+- **core** (14 files, 1654 lines) — typescript
 - **extraction** (4 files, 1149 lines) — typescript
-- **git** (3 files, 359 lines) — typescript
-- **mcp** (3 files, 708 lines) — typescript
-- **types** (2 files, 226 lines) — typescript
-- **utils** (3 files, 210 lines) — typescript
+- **mcp** (4 files, 590 lines) — typescript
+- **git** (3 files, 440 lines) — typescript
+- **utils** (4 files, 283 lines) — typescript
+- **types** (2 files, 228 lines) — typescript
 
-**External dependencies:** `node:path`, `node:fs`, `simple-git`, `node:child_process`, `commander`, `node:module`, `node:os`, `tree-sitter`, `@modelcontextprotocol/sdk`, `zod`, `yaml`, `vitest`, `express`, `tsup`
+**External dependencies (14):** `node:path`, `node:fs`, `simple-git`, `node:child_process`, `commander`, `node:module`, `node:os`, `tree-sitter`, `@modelcontextprotocol/sdk`, `zod`, `yaml`, `vitest`, `express`, `tsup`
 
 ## Risk Map
 
 **Hottest files (most changes):**
-- `README.md` — 12 changes, VOLATILE
-- `src/mcp/server.ts` — 10 changes, VOLATILE
-- `CLAUDE.md` — 7 changes, STABILIZING
-- `tests/extraction/parser.test.ts` — 6 changes, STABILIZING
-- `src/extraction/parser.ts` — 5 changes, STABILIZING
+- `README.md` — 17 changes, MODERATE
+- `src/mcp/server.ts` — 14 changes, MODERATE
+- `CLAUDE.md` — 12 changes, MODERATE
+- `src/cli/commands/init.ts` — 9 changes, VOLATILE
+- `src/cli/commands/update.ts` — 7 changes, MODERATE
 
 **Hidden dependencies (co-change but no import):**
-- `src/cli/commands/init.ts` ↔ `src/cli/commands/update.ts` — 5 co-changes (100%)
-- `.gitignore` ↔ `src/cli/commands/init.ts` — 3 co-changes (60%)
-- `.gitignore` ↔ `src/cli/commands/update.ts` — 3 co-changes (60%)
-- `src/cli/commands/init.ts` ↔ `tsup.config.ts` — 3 co-changes (60%)
-- `src/cli/commands/update.ts` ↔ `tsup.config.ts` — 3 co-changes (60%)
+- `src/cli/commands/init.ts` ↔ `src/cli/commands/update.ts` — 7 co-changes (78%)
+- `src/mcp/tools/read.ts` ↔ `src/mcp/tools/write.ts` — 4 co-changes (67%)
+- `src/core/agent-instructions.ts` ↔ `src/mcp/tools/read.ts` — 3 co-changes (50%)
+- `src/core/constitution.ts` ↔ `src/mcp/tools/read.ts` — 3 co-changes (50%)
+- `src/git/temporal.ts` ↔ `src/mcp/tools/read.ts` — 3 co-changes (50%)
 
 **Bug-prone files:**
-- `README.md` — 3 fix commits
-  - v0.4.3 — Node 20-22 engine restriction, fix broken README link
-  - remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)
-  - Go type extraction, docs cleanup, npm publish as codecortex-ai
-- `src/mcp/server.ts` — 3 fix commits
-  - v0.4.3 — Node 20-22 engine restriction, fix broken README link
+- `CLAUDE.md` — 4 fix commits
+  - revert to "knowledge layer" positioning, add cold-start framing
   - remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)
   - align version and language count across all surfaces
-- `CLAUDE.md` — 3 fix commits
+- `README.md` — 4 fix commits
+  - revert to "knowledge layer" positioning, add cold-start framing
+  - v0.4.3 — Node 20-22 engine restriction, fix broken README link
   - remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)
-  - align version and language count across all surfaces
-  - Go type extraction, docs cleanup, npm publish as codecortex-ai
+- `src/mcp/server.ts` — 4 fix commits
+  - revert to "knowledge layer" positioning, add cold-start framing
+  - v0.4.3 — Node 20-22 engine restriction, fix broken README link
+  - remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)
 
 ## Available Knowledge
 
 **Module docs:** `cli`, `core`, `extraction`, `git`, `mcp`, `types`, `utils`
 
-Use `get_module_context` to deep-dive into any module.
+Read `.codecortex/modules/*.md` directly for module deep-dives.
 Use `get_change_coupling` before editing a file to check what else must change.
 Use `lookup_symbol` to find any function, type, or class.

@@ -1,541 +1,1032 @@
 {
-  "generated": "2026-03-07T20:43:20.644Z",
+  "generated": "2026-04-21T10:10:23.413Z",
   "periodDays": 90,
-  "totalCommits": 37,
+  "totalCommits": 52,
   "hotspots": [
     {
       "file": "README.md",
-      "changes": 12,
-      "stability": "volatile",
-      "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
+      "changes": 17,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
     },
     {
       "file": "src/mcp/server.ts",
-      "changes": 10,
-      "stability": "volatile",
-      "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
+      "changes": 14,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
     },
     {
       "file": "CLAUDE.md",
+      "changes": 12,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "src/cli/commands/init.ts",
+      "changes": 9,
+      "stability": "volatile",
+      "lastChanged": "2026-04-19T19:37:46+05:30",
+      "daysSinceChange": 1
+    },
+    {
+      "file": "src/cli/commands/update.ts",
       "changes": 7,
-      "stability": "stabilizing",
-      "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "src/cli/index.ts",
+      "changes": 6,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "src/mcp/tools/read.ts",
+      "changes": 6,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
     },
     {
       "file": "tests/extraction/parser.test.ts",
       "changes": 6,
-      "stability": "stabilizing",
+      "stability": "moderate",
       "lastChanged": "2026-03-07T18:14:04+05:30",
-      "daysSinceChange": 0
+      "daysSinceChange": 44
+    },
+    {
+      "file": "src/git/temporal.ts",
+      "changes": 5,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
     },
     {
       "file": "src/extraction/parser.ts",
       "changes": 5,
-      "stability": "stabilizing",
+      "stability": "moderate",
       "lastChanged": "2026-03-07T18:00:19+05:30",
-      "daysSinceChange": 0
+      "daysSinceChange": 44
     },
     {
-      "file": "src/cli/index.ts",
-      "changes": 5,
-      "stability": "stabilizing",
-      "lastChanged": "2026-03-07T17:45:02+05:30",
-      "daysSinceChange": 0
+      "file": "src/types/index.ts",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-04-19T19:37:46+05:30",
+      "daysSinceChange": 1
     },
     {
-      "file": "src/cli/commands/init.ts",
-      "changes": 5,
-      "stability": "stabilizing",
-      "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
+      "file": "src/core/constitution.ts",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
     },
     {
-      "file": "src/cli/commands/update.ts",
-      "changes": 5,
-      "stability": "stabilizing",
-      "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
+      "file": "src/mcp/tools/write.ts",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/mcp/read-tools.test.ts",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": ".gitignore",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": "src/core/discovery.ts",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-03-08T02:14:43+05:30",
+      "daysSinceChange": 44
     },
     {
       "file": "src/extraction/symbols.ts",
       "changes": 4,
       "stability": "moderate",
       "lastChanged": "2026-03-02T23:50:46+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
-      "file": "src/mcp/tools/read.ts",
+      "file": "src/core/manifest.ts",
       "changes": 3,
       "stability": "moderate",
-      "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
+      "lastChanged": "2026-04-19T19:37:46+05:30",
+      "daysSinceChange": 1
     },
     {
-      "file": ".github/workflows/ci.yml",
+      "file": "tests/fixtures/setup.ts",
       "changes": 3,
       "stability": "moderate",
-      "lastChanged": "2026-03-07T18:16:39+05:30",
-      "daysSinceChange": 0
+      "lastChanged": "2026-04-19T19:37:46+05:30",
+      "daysSinceChange": 1
     },
     {
-      "file": ".gitignore",
+      "file": "src/core/agent-instructions.ts",
       "changes": 3,
       "stability": "moderate",
-      "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/core/agent-instructions.test.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/mcp/simulation.test.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/mcp/write-tools.test.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "src/core/module-gen.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-09T00:46:44+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "src/core/search.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "src/core/graph.ts",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-03-08T02:14:56+05:30",
+      "daysSinceChange": 44
     },
     {
       "file": "src/utils/files.ts",
       "changes": 3,
       "stability": "moderate",
       "lastChanged": "2026-03-02T23:31:18+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "src/extraction/calls.ts",
       "changes": 3,
       "stability": "moderate",
       "lastChanged": "2026-03-02T18:25:55+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "src/extraction/imports.ts",
       "changes": 3,
       "stability": "moderate",
       "lastChanged": "2026-03-02T18:25:55+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "tsup.config.ts",
       "changes": 3,
       "stability": "moderate",
       "lastChanged": "2026-03-02T18:25:55+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
-      "file": "src/core/discovery.ts",
-      "changes": 3,
-      "stability": "moderate",
-      "lastChanged": "2026-03-02T13:22:57+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "src/git/temporal.ts",
-      "changes": 3,
-      "stability": "moderate",
-      "lastChanged": "2026-03-02T13:22:57+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "src/types/index.ts",
+      "file": ".codecortex/cortex.yaml",
       "changes": 2,
       "stability": "stable",
-      "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
+      "lastChanged": "2026-04-19T19:37:46+05:30",
+      "daysSinceChange": 1
     },
     {
-      "file": "tests/mcp/read-tools.test.ts",
+      "file": "src/cli/grouped-help.ts",
       "changes": 2,
-      "stability": "stable",
-      "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": ".github/workflows/codeql.yml",
+      "changes": 2,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-09T01:17:03+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": ".github/workflows/scorecard.yml",
+      "changes": 2,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-09T01:17:03+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "src/cli/commands/modules.ts",
+      "changes": 2,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-09T00:46:44+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "src/utils/truncate.ts",
+      "changes": 2,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-09T00:46:44+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "tests/utils/truncate.test.ts",
+      "changes": 2,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-09T00:46:44+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "tests/core/search.test.ts",
+      "changes": 2,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
     },
     {
       "file": "tests/extraction/symbols.test.ts",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:50:46+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "src/core/constitution.ts",
-      "changes": 2,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T18:25:55+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "src/core/graph.ts",
-      "changes": 2,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T18:25:55+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "src/cli/commands/serve.ts",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/cli/commands/status.ts",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/core/decisions.ts",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "src/core/search.ts",
-      "changes": 2,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/core/sessions.ts",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/git/diff.ts",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/git/history.ts",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "src/mcp/tools/write.ts",
-      "changes": 2,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "tsconfig.json",
       "changes": 2,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:37:08+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
+    },
+    {
+      "file": "src/cli/commands/inject.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "src/core/context-injection.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "src/mcp/prompts.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "src/mcp/resources.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/core/context-injection.test.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/git/temporal-hotspots.test.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/mcp/prompts.test.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": "tests/mcp/resources.test.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-13T17:12:15+05:30",
+      "daysSinceChange": 38
+    },
+    {
+      "file": ".github/dependabot.yml",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "SECURITY.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "src/core/project-size.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "tests/core/module-gen.test.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": "tests/core/project-size.test.ts",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T23:08:23+05:30",
+      "daysSinceChange": 43
+    },
+    {
+      "file": ".codecortex/constitution.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/graph.json",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/modules/cli.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/modules/core.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/modules/extraction.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/modules/git.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/modules/mcp.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/modules/types.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/modules/utils.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/overview.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/patterns.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/sessions/2026-03-06T09-26-20.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/sessions/2026-03-07T19-55-44.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/sessions/2026-03-07T20-43-20.md",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/symbols.json",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
+    },
+    {
+      "file": ".codecortex/temporal.json",
+      "changes": 1,
+      "stability": "very_stable",
+      "lastChanged": "2026-03-08T02:15:07+05:30",
+      "daysSinceChange": 44
     },
     {
       "file": "src/core/freshness.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
+      "daysSinceChange": 44
     },
     {
       "file": "tests/core/freshness.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-08T01:25:37+05:30",
-      "daysSinceChange": 0
-    },
-    {
-      "file": "src/cli/grouped-help.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-07T17:45:02+05:30",
-      "daysSinceChange": 0
+      "daysSinceChange": 44
     },
     {
       "file": "src/cli/commands/upgrade.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-07T17:22:46+05:30",
-      "daysSinceChange": 0
+      "daysSinceChange": 44
     },
     {
       "file": "src/cli/utils/version-check.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-07T17:22:46+05:30",
-      "daysSinceChange": 0
+      "daysSinceChange": 44
     },
     {
       "file": "tests/cli/version-check.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-07T17:22:46+05:30",
-      "daysSinceChange": 0
+      "daysSinceChange": 44
     },
     {
       "file": "src/cli/commands/hook.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-06T14:43:16+05:30",
-      "daysSinceChange": 1
+      "daysSinceChange": 46
     },
     {
       "file": "tests/cli/hook.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-06T14:43:16+05:30",
-      "daysSinceChange": 1
+      "daysSinceChange": 46
     },
     {
       "file": "src/cli/commands/hotspots.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
-    },
-    {
-      "file": "src/cli/commands/modules.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
+      "daysSinceChange": 47
     },
     {
       "file": "src/cli/commands/search.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
+      "daysSinceChange": 47
     },
     {
       "file": "src/cli/commands/symbols.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
-    },
-    {
-      "file": "src/core/module-gen.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-04T20:12:01+05:30",
-      "daysSinceChange": 3
+      "daysSinceChange": 47
     },
     {
       "file": "tests/core/decisions.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "tests/core/graph.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "tests/core/search.test.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "tests/core/sessions.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "tests/extraction/calls.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "tests/extraction/imports.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "tests/fixtures/setup.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "tests/mcp/server.test.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "tests/mcp/simulation.test.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "tests/mcp/write-tools.test.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "vitest.config.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T23:29:40+05:30",
-      "daysSinceChange": 5
-    },
-    {
-      "file": "src/core/manifest.ts",
-      "changes": 1,
-      "stability": "stable",
-      "lastChanged": "2026-03-02T03:29:16+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 49
     },
     {
       "file": "src/core/modules.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:29:16+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/core/patterns.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:29:16+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/types/schema.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:29:16+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/utils/markdown.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:29:16+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "src/utils/yaml.ts",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-03-02T03:29:16+05:30",
-      "daysSinceChange": 5
+      "daysSinceChange": 50
     },
     {
       "file": "LICENSE",
       "changes": 1,
-      "stability": "stable",
+      "stability": "very_stable",
       "lastChanged": "2026-02-25T17:41:08+05:30",
-      "daysSinceChange": 10
+      "daysSinceChange": 54
     }
   ],
   "coupling": [
     {
       "fileA": "src/cli/commands/init.ts",
       "fileB": "src/cli/commands/update.ts",
+      "cochanges": 7,
+      "strength": 0.78,
+      "hasImport": false,
+      "warning": "HIDDEN DEPENDENCY — 78% co-change rate"
+    },
+    {
+      "fileA": "src/mcp/server.ts",
+      "fileB": "src/mcp/tools/read.ts",
       "cochanges": 5,
+      "strength": 0.36,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/core/constitution.ts",
+      "cochanges": 4,
+      "strength": 0.44,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/git/temporal.ts",
+      "cochanges": 4,
+      "strength": 0.44,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/mcp/tools/read.ts",
+      "cochanges": 4,
+      "strength": 0.44,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/git/temporal.ts",
+      "cochanges": 4,
+      "strength": 0.57,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/mcp/tools/read.ts",
+      "fileB": "src/mcp/tools/write.ts",
+      "cochanges": 4,
+      "strength": 0.67,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/core/manifest.ts",
+      "cochanges": 3,
+      "strength": 0.33,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/types/index.ts",
+      "cochanges": 3,
+      "strength": 0.33,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/core/manifest.ts",
+      "fileB": "src/types/index.ts",
+      "cochanges": 3,
+      "strength": 0.75,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/cli/index.ts",
+      "cochanges": 3,
+      "strength": 0.33,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/mcp/server.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/mcp/tools/write.ts",
+      "cochanges": 3,
+      "strength": 0.33,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/cli/index.ts",
+      "cochanges": 3,
+      "strength": 0.43,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/core/constitution.ts",
+      "cochanges": 3,
+      "strength": 0.43,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/mcp/tools/read.ts",
+      "cochanges": 3,
+      "strength": 0.43,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/commands/update.ts",
+      "fileB": "src/mcp/tools/write.ts",
+      "cochanges": 3,
+      "strength": 0.43,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/cli/index.ts",
+      "fileB": "src/mcp/server.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/core/agent-instructions.ts",
+      "fileB": "src/mcp/server.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/core/agent-instructions.ts",
+      "fileB": "src/mcp/tools/read.ts",
+      "cochanges": 3,
+      "strength": 0.5,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/core/agent-instructions.ts",
+      "fileB": "tests/core/agent-instructions.test.ts",
+      "cochanges": 3,
+      "strength": 1,
+      "hasImport": true
+    },
+    {
+      "fileA": "src/core/constitution.ts",
+      "fileB": "src/mcp/server.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/core/constitution.ts",
+      "fileB": "src/mcp/tools/read.ts",
+      "cochanges": 3,
+      "strength": 0.5,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/git/temporal.ts",
+      "fileB": "src/mcp/tools/read.ts",
+      "cochanges": 3,
+      "strength": 0.5,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/git/temporal.ts",
+      "fileB": "src/mcp/tools/write.ts",
+      "cochanges": 3,
+      "strength": 0.6,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/mcp/server.ts",
+      "fileB": "src/mcp/tools/write.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/mcp/server.ts",
+      "fileB": "tests/core/agent-instructions.test.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/mcp/server.ts",
+      "fileB": "tests/mcp/read-tools.test.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/mcp/tools/read.ts",
+      "fileB": "tests/core/agent-instructions.test.ts",
+      "cochanges": 3,
+      "strength": 0.5,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/mcp/tools/read.ts",
+      "fileB": "tests/mcp/read-tools.test.ts",
+      "cochanges": 3,
+      "strength": 0.5,
+      "hasImport": false
+    },
+    {
+      "fileA": "tests/mcp/simulation.test.ts",
+      "fileB": "tests/mcp/write-tools.test.ts",
+      "cochanges": 3,
       "strength": 1,
       "hasImport": false,
       "warning": "HIDDEN DEPENDENCY — 100% co-change rate"
     },
     {
+      "fileA": "src/cli/commands/init.ts",
+      "fileB": "src/core/search.ts",
+      "cochanges": 3,
+      "strength": 0.33,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/core/search.ts",
+      "fileB": "src/mcp/tools/read.ts",
+      "cochanges": 3,
+      "strength": 0.5,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/mcp/server.ts",
+      "fileB": "src/types/index.ts",
+      "cochanges": 3,
+      "strength": 0.21,
+      "hasImport": false
+    },
+    {
+      "fileA": "src/mcp/tools/read.ts",
+      "fileB": "src/types/index.ts",
+      "cochanges": 3,
+      "strength": 0.5,
+      "hasImport": true
+    },
+    {
       "fileA": ".gitignore",
       "fileB": "src/cli/commands/init.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.33,
       "hasImport": false
     },
     {
       "fileA": ".gitignore",
       "fileB": "src/cli/commands/update.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.43,
       "hasImport": false
     },
     {
       "fileA": "src/cli/commands/init.ts",
       "fileB": "src/extraction/calls.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.33,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/init.ts",
       "fileB": "src/extraction/imports.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.33,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/init.ts",
       "fileB": "src/extraction/parser.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.33,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/init.ts",
       "fileB": "src/extraction/symbols.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.33,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/init.ts",
       "fileB": "tsup.config.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.33,
       "hasImport": false
     },
     {
       "fileA": "src/cli/commands/update.ts",
       "fileB": "src/extraction/calls.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.43,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/update.ts",
       "fileB": "src/extraction/imports.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.43,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/update.ts",
       "fileB": "src/extraction/parser.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.43,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/update.ts",
       "fileB": "src/extraction/symbols.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.43,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/update.ts",
       "fileB": "tsup.config.ts",
       "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.43,
       "hasImport": false
     },
     {
@@ -618,44 +1109,40 @@
       "fileA": "src/cli/commands/init.ts",
       "fileB": "src/core/discovery.ts",
       "cochanges": 3,
-      "strength": 0.6,
-      "hasImport": true
-    },
-    {
-      "fileA": "src/cli/commands/init.ts",
-      "fileB": "src/git/temporal.ts",
-      "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.33,
       "hasImport": true
     },
     {
       "fileA": "src/cli/commands/update.ts",
       "fileB": "src/core/discovery.ts",
       "cochanges": 3,
-      "strength": 0.6,
-      "hasImport": true
-    },
-    {
-      "fileA": "src/cli/commands/update.ts",
-      "fileB": "src/git/temporal.ts",
-      "cochanges": 3,
-      "strength": 0.6,
+      "strength": 0.43,
       "hasImport": true
     },
     {
       "fileA": "src/core/discovery.ts",
       "fileB": "src/git/temporal.ts",
       "cochanges": 3,
-      "strength": 1,
-      "hasImport": false,
-      "warning": "HIDDEN DEPENDENCY — 100% co-change rate"
+      "strength": 0.6,
+      "hasImport": false
     }
   ],
   "bugHistory": [
     {
-      "file": "README.md",
-      "fixCommits": 3,
+      "file": "CLAUDE.md",
+      "fixCommits": 4,
       "lessons": [
+        "revert to \"knowledge layer\" positioning, add cold-start framing",
+        "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)",
+        "align version and language count across all surfaces",
+        "Go type extraction, docs cleanup, npm publish as codecortex-ai"
+      ]
+    },
+    {
+      "file": "README.md",
+      "fixCommits": 4,
+      "lessons": [
+        "revert to \"knowledge layer\" positioning, add cold-start framing",
         "v0.4.3 — Node 20-22 engine restriction, fix broken README link",
         "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)",
         "Go type extraction, docs cleanup, npm publish as codecortex-ai"
@@ -663,20 +1150,68 @@
     },
     {
       "file": "src/mcp/server.ts",
-      "fixCommits": 3,
+      "fixCommits": 4,
       "lessons": [
+        "revert to \"knowledge layer\" positioning, add cold-start framing",
         "v0.4.3 — Node 20-22 engine restriction, fix broken README link",
         "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)",
         "align version and language count across all surfaces"
       ]
     },
     {
-      "file": "CLAUDE.md",
-      "fixCommits": 3,
+      "file": ".codecortex/cortex.yaml",
+      "fixCommits": 1,
       "lessons": [
-        "remove tree-sitter-liquid git dep that broke npm installs (v0.4.2)",
-        "align version and language count across all surfaces",
-        "Go type extraction, docs cleanup, npm publish as codecortex-ai"
+        "drop absolute root path from cortex.yaml manifest"
+      ]
+    },
+    {
+      "file": "src/cli/commands/init.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "drop absolute root path from cortex.yaml manifest"
+      ]
+    },
+    {
+      "file": "src/core/manifest.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "drop absolute root path from cortex.yaml manifest"
+      ]
+    },
+    {
+      "file": "src/types/index.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "drop absolute root path from cortex.yaml manifest"
+      ]
+    },
+    {
+      "file": "tests/fixtures/setup.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "drop absolute root path from cortex.yaml manifest"
+      ]
+    },
+    {
+      "file": "src/core/graph.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "hidden dep warnings now only fire for files without imports"
+      ]
+    },
+    {
+      "file": "src/git/temporal.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "hidden dep warnings now only fire for files without imports"
+      ]
+    },
+    {
+      "file": "src/core/discovery.ts",
+      "fixCommits": 1,
+      "lessons": [
+        "replace execSync('cat') with readFileSync to prevent command injection"
       ]
     },
     {

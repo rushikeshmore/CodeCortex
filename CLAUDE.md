@@ -112,3 +112,47 @@ src/
 - Hotspots: files ranked by change frequency (high churn = risky)
 - Bug archaeology: fix/bug commit messages → learned lessons per module
 - Stability signals: days since last change, change velocity per file
+
+<!-- codecortex:start -->
+## CodeCortex — Project Knowledge (auto-updated)
+
+### Architecture
+**codecortex-ai** — typescript — 70 files, 1549 symbols
+- **Modules (7):** cli (1661loc), core (1654loc), extraction (1149loc), mcp (590loc), git (440loc), utils (283loc), types (228loc)
+- **Entry points:** `dist/cli/index.js`
+- **Key deps:** node:path, node:fs, simple-git, node:child_process, commander, +9 more
+
+### Risk Map
+**High-risk files:**
+- `README.md` — 17 changes, 4 bug-fixes, moderate
+- `src/mcp/server.ts` — 14 changes, 4 bug-fixes, moderate, coupled to: read.ts, init.ts ⚠
+- `CLAUDE.md` — 12 changes, 4 bug-fixes, moderate
+- `src/cli/commands/init.ts` — 9 changes, 1 bug-fixes, volatile, coupled to: update.ts ⚠, constitution.ts
+- `src/cli/commands/update.ts` — 7 changes, moderate, coupled to: init.ts ⚠, temporal.ts
+
+**Hidden couplings (co-change, no import):**
+- `src/cli/commands/init.ts` ↔ `src/cli/commands/update.ts` (78% co-change)
+- `src/mcp/tools/read.ts` ↔ `src/mcp/tools/write.ts` (67% co-change)
+- `src/core/agent-instructions.ts` ↔ `src/mcp/tools/read.ts` (50% co-change)
+
+### Before Editing
+Check `.codecortex/hotspots.md` for risk-ranked files before editing.
+If CodeCortex MCP tools are available, call `get_edit_briefing` for coupling + risk details.
+If not, read `.codecortex/modules/<module>.md` for the relevant module's dependencies and bug history.
+
+### Project Knowledge
+Read these files directly (always available, no tool call needed):
+- `.codecortex/hotspots.md` — risk-ranked files with coupling + bug data
+- `.codecortex/modules/*.md` — module docs, dependencies, temporal signals
+- `.codecortex/constitution.md` — full architecture overview
+- `.codecortex/patterns.md` — coding conventions
+- `.codecortex/decisions/*.md` — architectural decisions
+
+### MCP Tools (if available)
+If a CodeCortex MCP server is connected, these tools provide live analysis:
+- `get_edit_briefing` — risk + coupling + bugs for files you plan to edit.
+- `get_change_coupling` — files that co-change (hidden dependencies).
+- `get_project_overview` — architecture + dependency graph summary.
+- `get_dependency_graph` — scoped import/call graph for file or module.
+- `lookup_symbol` — precise symbol search (name, kind, file filters).
+<!-- codecortex:end -->
