@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtemp, rm, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { generateInlineContext, injectIntoFile, injectAllAgentFiles } from '../../src/core/context-injection.js'
+import { generateInlineContext, injectIntoFile, injectAllAgentFiles, detectMcpConfigured } from '../../src/core/context-injection.js'
 
 let root: string
 
@@ -23,8 +23,36 @@ describe('generateInlineContext', () => {
     expect(content).toContain('<!-- codecortex:end -->')
     expect(content).toContain('## CodeCortex')
     expect(content).toContain('### Before Editing')
-    expect(content).toContain('### MCP Tools (if available)')
     expect(content).toContain('### Project Knowledge')
+  })
+
+  it('omits MCP Tools section when no MCP config detected', async () => {
+    const content = await generateInlineContext(root)
+
+    expect(content).not.toContain('### MCP Tools')
+    expect(content).not.toContain('get_edit_briefing')
+    expect(content).toContain('Read `.codecortex/modules/<module>.md`')
+  })
+
+  it('includes MCP Tools section when mcpConfigured option is true', async () => {
+    const content = await generateInlineContext(root, { mcpConfigured: true })
+
+    expect(content).toContain('### MCP Tools')
+    expect(content).toContain('CodeCortex MCP server is configured')
+    expect(content).toContain('Call `get_edit_briefing`')
+  })
+
+  it('auto-detects MCP from .mcp.json in project root', async () => {
+    await writeFile(
+      join(root, '.mcp.json'),
+      JSON.stringify({ mcpServers: { codecortex: { command: 'codecortex', args: ['mcp'] } } }),
+      'utf-8'
+    )
+
+    const content = await generateInlineContext(root)
+
+    expect(content).toContain('### MCP Tools')
+    expect(content).toContain('get_edit_briefing')
   })
 
   it('includes architecture when manifest exists', async () => {
@@ -47,7 +75,6 @@ describe('generateInlineContext', () => {
     const { writeManifest, createManifest } = await import('../../src/core/manifest.js')
     await writeManifest(root, createManifest({
       project: 'test-project',
-      root,
       languages: ['typescript', 'python'],
       totalFiles: 42,
       totalSymbols: 500,
@@ -88,8 +115,8 @@ describe('generateInlineContext', () => {
     expect(content).toContain('75% co-change')
   })
 
-  it('includes all 5 tool names', async () => {
-    const content = await generateInlineContext(root)
+  it('includes all 5 tool names when MCP configured', async () => {
+    const content = await generateInlineContext(root, { mcpConfigured: true })
 
     expect(content).toContain('get_project_overview')
     expect(content).toContain('get_dependency_graph')
@@ -99,12 +126,66 @@ describe('generateInlineContext', () => {
   })
 
   it('does not include dropped tool names', async () => {
-    const content = await generateInlineContext(root)
+    const content = await generateInlineContext(root, { mcpConfigured: true })
 
     expect(content).not.toContain('search_knowledge')
     expect(content).not.toContain('get_module_context')
     expect(content).not.toContain('get_hotspots')
     expect(content).not.toContain('record_decision')
+  })
+})
+
+describe('detectMcpConfigured', () => {
+  it('returns false when no MCP config files exist', async () => {
+    expect(await detectMcpConfigured(root)).toBe(false)
+  })
+
+  it('returns false when MCP config exists but references no codecortex', async () => {
+    await writeFile(
+      join(root, '.mcp.json'),
+      JSON.stringify({ mcpServers: { other: { command: 'other' } } }),
+      'utf-8'
+    )
+    expect(await detectMcpConfigured(root)).toBe(false)
+  })
+
+  it('detects codecortex in .mcp.json (Claude Code project scope)', async () => {
+    await writeFile(
+      join(root, '.mcp.json'),
+      JSON.stringify({ mcpServers: { codecortex: { command: 'codecortex' } } }),
+      'utf-8'
+    )
+    expect(await detectMcpConfigured(root)).toBe(true)
+  })
+
+  it('detects codecortex in .cursor/mcp.json', async () => {
+    await mkdir(join(root, '.cursor'), { recursive: true })
+    await writeFile(
+      join(root, '.cursor', 'mcp.json'),
+      JSON.stringify({ mcpServers: { codecortex: { command: 'codecortex' } } }),
+      'utf-8'
+    )
+    expect(await detectMcpConfigured(root)).toBe(true)
+  })
+
+  it('detects codecortex in .vscode/mcp.json', async () => {
+    await mkdir(join(root, '.vscode'), { recursive: true })
+    await writeFile(
+      join(root, '.vscode', 'mcp.json'),
+      JSON.stringify({ servers: { codecortex: { command: 'codecortex' } } }),
+      'utf-8'
+    )
+    expect(await detectMcpConfigured(root)).toBe(true)
+  })
+
+  it('detects codecortex in .windsurf/mcp.json', async () => {
+    await mkdir(join(root, '.windsurf'), { recursive: true })
+    await writeFile(
+      join(root, '.windsurf', 'mcp.json'),
+      JSON.stringify({ mcpServers: { codecortex: { command: 'codecortex' } } }),
+      'utf-8'
+    )
+    expect(await detectMcpConfigured(root)).toBe(true)
   })
 })
 

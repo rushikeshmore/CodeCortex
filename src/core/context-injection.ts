@@ -27,11 +27,49 @@ export const AGENT_CONFIG_FILES = [
   '.github/copilot-instructions.md', // GitHub Copilot
 ]
 
+// Project-scoped MCP config files that may reference a codecortex server.
+// We only check project-local files because global configs (~/Library/... on macOS)
+// vary by OS and can't be reliably mapped back to this specific project.
+const MCP_CONFIG_FILES = [
+  '.mcp.json',                  // Claude Code project-scoped
+  '.cursor/mcp.json',           // Cursor
+  '.vscode/mcp.json',           // VS Code
+  '.windsurf/mcp.json',         // Windsurf
+]
+
+/**
+ * Detect whether a CodeCortex MCP server is configured for this project.
+ * Returns true only when a project-scoped MCP config file references
+ * codecortex explicitly. Err on the side of false — a false positive here
+ * means we tell agents to call tools that aren't there, which was the
+ * top-ranked failure mode in v0.6.0 E2E testing.
+ */
+export async function detectMcpConfigured(projectRoot: string): Promise<boolean> {
+  for (const rel of MCP_CONFIG_FILES) {
+    const full = join(projectRoot, rel)
+    if (!existsSync(full)) continue
+    try {
+      const content = await fsReadFile(full, 'utf-8')
+      if (/codecortex/i.test(content)) return true
+    } catch {
+      // Unreadable file, skip
+    }
+  }
+  return false
+}
+
 /**
  * Generate inline context from .codecortex/ data.
  * Reads pre-computed knowledge files and synthesizes a ~60-80 line Markdown section.
+ *
+ * Set opts.mcpConfigured to force the MCP tool section on/off. If omitted,
+ * we auto-detect by scanning project-scoped MCP config files.
  */
-export async function generateInlineContext(projectRoot: string): Promise<string> {
+export async function generateInlineContext(
+  projectRoot: string,
+  opts: { mcpConfigured?: boolean } = {}
+): Promise<string> {
+  const mcpConfigured = opts.mcpConfigured ?? await detectMcpConfigured(projectRoot)
   const manifest = await readManifest(projectRoot)
 
   // Read temporal data
@@ -152,8 +190,11 @@ export async function generateInlineContext(projectRoot: string): Promise<string
   // --- Before Editing directive ---
   lines.push('### Before Editing')
   lines.push('Check `.codecortex/hotspots.md` for risk-ranked files before editing.')
-  lines.push('If CodeCortex MCP tools are available, call `get_edit_briefing` for coupling + risk details.')
-  lines.push('If not, read `.codecortex/modules/<module>.md` for the relevant module\'s dependencies and bug history.')
+  if (mcpConfigured) {
+    lines.push('Call `get_edit_briefing` for coupling + risk details on the files you plan to touch.')
+  } else {
+    lines.push('Read `.codecortex/modules/<module>.md` for the relevant module\'s dependencies and bug history.')
+  }
   lines.push('')
 
   // --- Static Knowledge (primary — always available) ---
@@ -166,14 +207,16 @@ export async function generateInlineContext(projectRoot: string): Promise<string
   lines.push('- `.codecortex/decisions/*.md` — architectural decisions')
   lines.push('')
 
-  // --- MCP Tools (secondary — only if server is connected) ---
-  lines.push('### MCP Tools (if available)')
-  lines.push('If a CodeCortex MCP server is connected, these tools provide live analysis:')
-  lines.push('- `get_edit_briefing` — risk + coupling + bugs for files you plan to edit.')
-  lines.push('- `get_change_coupling` — files that co-change (hidden dependencies).')
-  lines.push('- `get_project_overview` — architecture + dependency graph summary.')
-  lines.push('- `get_dependency_graph` — scoped import/call graph for file or module.')
-  lines.push('- `lookup_symbol` — precise symbol search (name, kind, file filters).')
+  // --- MCP Tools (only when a codecortex server is configured for this project) ---
+  if (mcpConfigured) {
+    lines.push('### MCP Tools')
+    lines.push('CodeCortex MCP server is configured. These tools give live analysis:')
+    lines.push('- `get_edit_briefing` — risk + coupling + bugs for files you plan to edit.')
+    lines.push('- `get_change_coupling` — files that co-change (hidden dependencies).')
+    lines.push('- `get_project_overview` — architecture + dependency graph summary.')
+    lines.push('- `get_dependency_graph` — scoped import/call graph for file or module.')
+    lines.push('- `lookup_symbol` — precise symbol search (name, kind, file filters).')
+  }
   lines.push(MARKER_END)
 
   return lines.join('\n') + '\n'

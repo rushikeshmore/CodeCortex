@@ -24,6 +24,11 @@ describe('generateAgentInstructions', () => {
   })
 
   it('creates CLAUDE.md with inline context when none exists', async () => {
+    await writeFile(
+      join(root, '.mcp.json'),
+      JSON.stringify({ mcpServers: { codecortex: { command: 'codecortex' } } }),
+      'utf-8'
+    )
     await generateAgentInstructions(root)
 
     const claudeMd = await readFile(join(root, 'CLAUDE.md'), 'utf-8')
@@ -35,6 +40,11 @@ describe('generateAgentInstructions', () => {
 
   it('appends inline context to existing CLAUDE.md', async () => {
     await writeFile(join(root, 'CLAUDE.md'), '# My Project\n\nSome instructions.\n', 'utf-8')
+    await writeFile(
+      join(root, '.mcp.json'),
+      JSON.stringify({ mcpServers: { codecortex: { command: 'codecortex' } } }),
+      'utf-8'
+    )
 
     await generateAgentInstructions(root)
 
