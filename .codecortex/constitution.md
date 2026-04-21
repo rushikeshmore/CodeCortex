@@ -6,17 +6,17 @@
 - **Name:** codecortex-ai
 - **Languages:** typescript
 - **Files:** 70
-- **Symbols:** 1549
+- **Symbols:** 1557
 - **Modules:** 7
-- **Last updated:** 2026-04-21T10:10:23.420Z
+- **Last updated:** 2026-04-21T10:16:37.600Z
 
 ## Architecture
 
 **Entry points:** `dist/cli/index.js`
 
 **Modules (7):**
+- **core** (14 files, 1697 lines) — typescript
 - **cli** (14 files, 1661 lines) — typescript
-- **core** (14 files, 1654 lines) — typescript
 - **extraction** (4 files, 1149 lines) — typescript
 - **mcp** (4 files, 590 lines) — typescript
 - **git** (3 files, 440 lines) — typescript
@@ -30,7 +30,7 @@
 **Hottest files (most changes):**
 - `README.md` — 17 changes, MODERATE
 - `src/mcp/server.ts` — 14 changes, MODERATE
-- `CLAUDE.md` — 12 changes, MODERATE
+- `CLAUDE.md` — 13 changes, VOLATILE
 - `src/cli/commands/init.ts` — 9 changes, VOLATILE
 - `src/cli/commands/update.ts` — 7 changes, MODERATE
 
@@ -58,6 +58,7 @@
 ## Available Knowledge
 
 **Module docs:** `cli`, `core`, `extraction`, `git`, `mcp`, `types`, `utils`
+**Decision records:** 1
 
 Read `.codecortex/modules/*.md` directly for module deep-dives.
 Use `get_change_coupling` before editing a file to check what else must change.

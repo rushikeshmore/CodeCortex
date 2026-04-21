@@ -1,7 +1,7 @@
 {
-  "generated": "2026-04-21T10:10:23.413Z",
+  "generated": "2026-04-21T10:16:37.595Z",
   "periodDays": 90,
-  "totalCommits": 52,
+  "totalCommits": 54,
   "hotspots": [
     {
       "file": "README.md",
@@ -19,10 +19,10 @@
     },
     {
       "file": "CLAUDE.md",
-      "changes": 12,
-      "stability": "moderate",
-      "lastChanged": "2026-03-13T17:12:15+05:30",
-      "daysSinceChange": 38
+      "changes": 13,
+      "stability": "volatile",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
     },
     {
       "file": "src/cli/commands/init.ts",
@@ -72,6 +72,13 @@
       "stability": "moderate",
       "lastChanged": "2026-03-07T18:00:19+05:30",
       "daysSinceChange": 44
+    },
+    {
+      "file": "tests/core/agent-instructions.test.ts",
+      "changes": 4,
+      "stability": "moderate",
+      "lastChanged": "2026-04-21T15:46:22+05:30",
+      "daysSinceChange": 0
     },
     {
       "file": "src/types/index.ts",
@@ -130,6 +137,13 @@
       "daysSinceChange": 49
     },
     {
+      "file": ".codecortex/cortex.yaml",
+      "changes": 3,
+      "stability": "moderate",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
       "file": "src/core/manifest.ts",
       "changes": 3,
       "stability": "moderate",
@@ -145,13 +159,6 @@
     },
     {
       "file": "src/core/agent-instructions.ts",
-      "changes": 3,
-      "stability": "moderate",
-      "lastChanged": "2026-03-13T17:12:15+05:30",
-      "daysSinceChange": 38
-    },
-    {
-      "file": "tests/core/agent-instructions.test.ts",
       "changes": 3,
       "stability": "moderate",
       "lastChanged": "2026-03-13T17:12:15+05:30",
@@ -221,11 +228,60 @@
       "daysSinceChange": 49
     },
     {
-      "file": ".codecortex/cortex.yaml",
+      "file": "src/core/context-injection.ts",
       "changes": 2,
       "stability": "stable",
-      "lastChanged": "2026-04-19T19:37:46+05:30",
-      "daysSinceChange": 1
+      "lastChanged": "2026-04-21T15:46:22+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "tests/core/context-injection.test.ts",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:46:22+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".codecortex/constitution.md",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".codecortex/graph.json",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".codecortex/overview.md",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".codecortex/patterns.md",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".codecortex/symbols.json",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".codecortex/temporal.json",
+      "changes": 2,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
     },
     {
       "file": "src/cli/grouped-help.ts",
@@ -333,14 +389,28 @@
       "daysSinceChange": 50
     },
     {
-      "file": "src/cli/commands/inject.ts",
+      "file": ".codecortex/AGENT.md",
       "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-13T17:12:15+05:30",
-      "daysSinceChange": 38
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
     },
     {
-      "file": "src/core/context-injection.ts",
+      "file": "...nitialized-codecortex-for-codebase-knowledge.md",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": ".codecortex/hotspots.md",
+      "changes": 1,
+      "stability": "stable",
+      "lastChanged": "2026-04-21T15:41:01+05:30",
+      "daysSinceChange": 0
+    },
+    {
+      "file": "src/cli/commands/inject.ts",
       "changes": 1,
       "stability": "very_stable",
       "lastChanged": "2026-03-13T17:12:15+05:30",
@@ -355,13 +425,6 @@
     },
     {
       "file": "src/mcp/resources.ts",
-      "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-13T17:12:15+05:30",
-      "daysSinceChange": 38
-    },
-    {
-      "file": "tests/core/context-injection.test.ts",
       "changes": 1,
       "stability": "very_stable",
       "lastChanged": "2026-03-13T17:12:15+05:30",
@@ -424,20 +487,6 @@
       "daysSinceChange": 43
     },
     {
-      "file": ".codecortex/constitution.md",
-      "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-08T02:15:07+05:30",
-      "daysSinceChange": 44
-    },
-    {
-      "file": ".codecortex/graph.json",
-      "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-08T02:15:07+05:30",
-      "daysSinceChange": 44
-    },
-    {
       "file": ".codecortex/modules/cli.md",
       "changes": 1,
       "stability": "very_stable",
@@ -487,20 +536,6 @@
       "daysSinceChange": 44
     },
     {
-      "file": ".codecortex/overview.md",
-      "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-08T02:15:07+05:30",
-      "daysSinceChange": 44
-    },
-    {
-      "file": ".codecortex/patterns.md",
-      "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-08T02:15:07+05:30",
-      "daysSinceChange": 44
-    },
-    {
       "file": ".codecortex/sessions/2026-03-06T09-26-20.md",
       "changes": 1,
       "stability": "very_stable",
@@ -516,20 +551,6 @@
     },
     {
       "file": ".codecortex/sessions/2026-03-07T20-43-20.md",
-      "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-08T02:15:07+05:30",
-      "daysSinceChange": 44
-    },
-    {
-      "file": ".codecortex/symbols.json",
-      "changes": 1,
-      "stability": "very_stable",
-      "lastChanged": "2026-03-08T02:15:07+05:30",
-      "daysSinceChange": 44
-    },
-    {
-      "file": ".codecortex/temporal.json",
       "changes": 1,
       "stability": "very_stable",
       "lastChanged": "2026-03-08T02:15:07+05:30",
@@ -843,7 +864,7 @@
       "fileA": "src/core/agent-instructions.ts",
       "fileB": "tests/core/agent-instructions.test.ts",
       "cochanges": 3,
-      "strength": 1,
+      "strength": 0.75,
       "hasImport": true
     },
     {

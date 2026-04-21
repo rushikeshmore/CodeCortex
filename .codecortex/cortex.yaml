@@ -1,11 +1,11 @@
 version: 1.0.0
 project: codecortex-ai
-generated: 2026-04-21T10:10:23.420Z
-lastUpdated: 2026-04-21T10:10:23.420Z
+generated: 2026-04-21T10:16:37.600Z
+lastUpdated: 2026-04-21T10:16:37.600Z
 languages:
   - typescript
 totalFiles: 70
-totalSymbols: 1549
+totalSymbols: 1557
 totalModules: 7
 projectSize: small
 tiers:
