@@ -42,6 +42,40 @@ describe('generateInlineContext', () => {
     expect(content).toContain('Call `get_edit_briefing`')
   })
 
+  it('omits missing knowledge files from Project Knowledge section', async () => {
+    const content = await generateInlineContext(root)
+
+    // No .codecortex files exist in this test root, so Project Knowledge has no bullets
+    const knowledgeIdx = content.indexOf('### Project Knowledge')
+    expect(knowledgeIdx).toBeGreaterThan(-1)
+    const knowledgeSection = content.slice(knowledgeIdx)
+    expect(knowledgeSection).not.toContain('- `.codecortex/hotspots.md`')
+    expect(knowledgeSection).not.toContain('- `.codecortex/modules/*.md`')
+    expect(knowledgeSection).not.toContain('- `.codecortex/constitution.md`')
+    expect(knowledgeSection).not.toContain('- `.codecortex/patterns.md`')
+    expect(knowledgeSection).not.toContain('- `.codecortex/decisions/*.md`')
+  })
+
+  it('skips empty patterns.md in Project Knowledge section', async () => {
+    await writeFile(join(root, '.codecortex', 'hotspots.md'), '# Risk', 'utf-8')
+    await writeFile(join(root, '.codecortex', 'patterns.md'), '', 'utf-8')
+
+    const content = await generateInlineContext(root)
+    const knowledgeSection = content.slice(content.indexOf('### Project Knowledge'))
+
+    expect(knowledgeSection).toContain('- `.codecortex/hotspots.md`')
+    expect(knowledgeSection).not.toContain('- `.codecortex/patterns.md`')
+  })
+
+  it('includes populated patterns.md in Project Knowledge section', async () => {
+    await writeFile(join(root, '.codecortex', 'patterns.md'), '# Patterns\n\nUse X for Y.', 'utf-8')
+
+    const content = await generateInlineContext(root)
+    const knowledgeSection = content.slice(content.indexOf('### Project Knowledge'))
+
+    expect(knowledgeSection).toContain('- `.codecortex/patterns.md`')
+  })
+
   it('auto-detects MCP from .mcp.json in project root', async () => {
     await writeFile(
       join(root, '.mcp.json'),

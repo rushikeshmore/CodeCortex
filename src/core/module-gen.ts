@@ -81,7 +81,7 @@ export async function generateStructuralModuleDocs(
         churn: topHotspot ? `${topHotspot.changes} changes (${topHotspot.stability})` : 'no hotspot data',
         coupledWith,
         stability: topHotspot?.stability ?? 'unknown',
-        bugHistory: bugs.flatMap(b => b.lessons),
+        bugHistory: [...new Set(bugs.flatMap(b => b.lessons))],
         lastChanged: topHotspot?.lastChanged ?? 'unknown',
       }
     }

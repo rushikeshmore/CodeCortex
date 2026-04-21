@@ -198,13 +198,28 @@ export async function generateInlineContext(
   lines.push('')
 
   // --- Static Knowledge (primary — always available) ---
+  // Only reference files that actually exist. Empty/missing references erode trust.
   lines.push('### Project Knowledge')
   lines.push('Read these files directly (always available, no tool call needed):')
-  lines.push('- `.codecortex/hotspots.md` — risk-ranked files with coupling + bug data')
-  lines.push('- `.codecortex/modules/*.md` — module docs, dependencies, temporal signals')
-  lines.push('- `.codecortex/constitution.md` — full architecture overview')
-  lines.push('- `.codecortex/patterns.md` — coding conventions')
-  lines.push('- `.codecortex/decisions/*.md` — architectural decisions')
+  const knowledgeRefs: Array<[string, string]> = [
+    ['hotspots.md', '- `.codecortex/hotspots.md` — risk-ranked files with coupling + bug data'],
+    ['modules', '- `.codecortex/modules/*.md` — module docs, dependencies, temporal signals'],
+    ['constitution.md', '- `.codecortex/constitution.md` — full architecture overview'],
+    ['patterns.md', '- `.codecortex/patterns.md` — coding conventions'],
+    ['decisions', '- `.codecortex/decisions/*.md` — architectural decisions'],
+  ]
+  for (const [rel, bullet] of knowledgeRefs) {
+    const full = cortexPath(projectRoot, rel)
+    if (!existsSync(full)) continue
+    // Skip patterns.md if it's empty/placeholder — no point telling agents to read nothing
+    if (rel === 'patterns.md') {
+      try {
+        const content = await fsReadFile(full, 'utf-8')
+        if (content.trim().length === 0) continue
+      } catch { continue }
+    }
+    lines.push(bullet)
+  }
   lines.push('')
 
   // --- MCP Tools (only when a codecortex server is configured for this project) ---
